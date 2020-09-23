@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"fmt"
 	"os"
 	"singo/cache"
 	"singo/model"
@@ -12,7 +13,10 @@ import (
 // Init 初始化配置项
 func Init() {
 	// 从本地读取环境变量
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		_, _ = fmt.Fprintln(os.Stderr, "load config failed")
+		panic(err)
+	}
 
 	// 设置日志级别
 	util.BuildLogger(os.Getenv("LOG_LEVEL"))
