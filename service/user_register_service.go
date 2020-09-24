@@ -48,7 +48,6 @@ func (service *UserRegisterService) Register() serializer.Response {
 	user := model.User{
 		Nickname: service.Nickname,
 		UserName: service.UserName,
-		Status:   model.Active,
 	}
 
 	// 表单验证
