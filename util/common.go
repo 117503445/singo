@@ -2,6 +2,8 @@ package util
 
 import (
 	"math/rand"
+	"path"
+	"runtime"
 	"time"
 )
 
@@ -15,4 +17,11 @@ func RandStringRunes(n int) string {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
 	return string(b)
+}
+
+// 获取调用者 go 文件 所在文件夹
+func GetCurrentPath() string {
+	_, filename, _, _ := runtime.Caller(1)
+
+	return path.Dir(filename)
 }
