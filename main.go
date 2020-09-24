@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/spf13/viper"
 	"singo/conf"
 	"singo/server"
+	"singo/util"
 )
 
 func main() {
@@ -11,5 +13,7 @@ func main() {
 
 	// 装载路由
 	r := server.NewRouter()
-	r.Run(":3000")
+	if err := r.Run(":" + viper.GetString("gin.port")); err != nil {
+		util.Log().Panic("router run failed", err)
+	}
 }

@@ -12,6 +12,7 @@ redis:
 session:
   secret: setOnProducation
 gin:
+  port: 80
   mode: debug
 log:
   level: debug
