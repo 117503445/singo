@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"fmt"
 	"singo/util"
 	"time"
@@ -24,23 +25,34 @@ func Database() {
 	password := viper.Get("mysql.password")
 	dbname := viper.Get("mysql.dbname")
 
-	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8&parseTime=True&loc=Local", username, password, host, port, dbname)
+	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/?charset=utf8&parseTime=True&loc=Local", username, password, host, port)
+	sqlDB, err := sql.Open("mysql", dsn)
+	if err != nil {
+		util.Log().Panic("连接数据库不成功", err)
+	}
+	_, err = sqlDB.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %v", dbname))
+	if err != nil {
+		util.Log().Panic("创建数据库不成功", err)
+	}
 
-	db, err := gorm.Open("mysql", dsn)
-	db.LogMode(true)
+	dsn = fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8&parseTime=True&loc=Local", username, password, host, port, dbname)
+	ormDB, err := gorm.Open("mysql", dsn)
 	// Error
 	if err != nil {
 		util.Log().Panic("连接数据库不成功", err)
 	}
+
+	ormDB.LogMode(true)
+
 	//设置连接池
 	//空闲
-	db.DB().SetMaxIdleConns(50)
+	ormDB.DB().SetMaxIdleConns(50)
 	//打开
-	db.DB().SetMaxOpenConns(100)
+	ormDB.DB().SetMaxOpenConns(100)
 	//超时
-	db.DB().SetConnMaxLifetime(time.Second * 30)
+	ormDB.DB().SetConnMaxLifetime(time.Second * 30)
 
-	DB = db
+	DB = ormDB
 
 	migration()
 }
