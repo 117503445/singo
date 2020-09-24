@@ -1,0 +1,17 @@
+mysql:
+  host: localhost
+  port: 3306
+  username: root
+  password: 
+  dbname: singo
+redis:
+  host: localhost
+  port: 6379
+  password: 
+  dbname: singo
+session:
+  secret: setOnProducation
+gin:
+  mode: debug
+log:
+  level: debug

@@ -8,21 +8,24 @@ import (
 	"singo/model"
 	"singo/util"
 
-	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
+
 
 // Init 初始化配置项
 func Init() {
 	filepathBase := filepath.Dir(util.GetCurrentPath())
-	filePathEnv := filepath.Join(filepathBase, ".env")
-	// 从本地读取环境变量
-	if err := godotenv.Load(filePathEnv); err != nil {
+	filePathEnv := filepath.Join(filepathBase, "config.yaml")
+
+	viper.SetConfigFile(filePathEnv) // 配置文件
+
+	if err := viper.ReadInConfig(); err != nil {
 		_, _ = fmt.Fprintln(os.Stderr, "load config failed")
 		panic(err)
 	}
 
 	// 设置日志级别
-	util.BuildLogger(os.Getenv("LOG_LEVEL"))
+	util.BuildLogger(viper.GetString("log.level"))
 
 	// 读取翻译文件
 	if err := LoadLocales(filepath.Join(util.GetCurrentPath(), "locales", "zh-cn.yaml")); err != nil {
@@ -30,6 +33,6 @@ func Init() {
 	}
 
 	// 连接数据库
-	model.Database(os.Getenv("MYSQL_DSN"))
+	model.Database()
 	cache.Redis()
 }

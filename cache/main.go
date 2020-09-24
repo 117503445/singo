@@ -1,11 +1,11 @@
 package cache
 
 import (
-	"os"
+	"fmt"
+	"github.com/go-redis/redis"
+	"github.com/spf13/viper"
 	"singo/util"
 	"strconv"
-
-	"github.com/go-redis/redis"
 )
 
 // RedisClient Redis缓存客户端单例
@@ -13,10 +13,14 @@ var RedisClient *redis.Client
 
 // Redis 在中间件中初始化redis链接
 func Redis() {
-	db, _ := strconv.ParseUint(os.Getenv("REDIS_DB"), 10, 64)
+	db, _ := strconv.ParseUint(viper.GetString("redis.dbname"), 10, 64)
+	host := viper.GetString("redis.host")
+	port := viper.GetString("redis.port")
+
+	addr := fmt.Sprintf("%v:%v", host, port)
 	client := redis.NewClient(&redis.Options{
-		Addr:       os.Getenv("REDIS_ADDR"),
-		Password:   os.Getenv("REDIS_PW"),
+		Addr:       addr,
+		Password:   viper.GetString("redis.password"),
 		DB:         int(db),
 		MaxRetries: 1,
 	})
