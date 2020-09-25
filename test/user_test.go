@@ -85,9 +85,21 @@ func TestRegister(t *testing.T) {
 
 	expectResponse := map[string]interface{}( gin.H{
 		"code": float64(0),
-		"msg":  "Pong",
 	})
-	assert.Equal(t, expectResponse, response)
+	expectResponseData := map[string]interface{}( gin.H{
+		"id":        float64(1),
+		"avatar":    "",
+		"user_name": "UserName",
+	},
+	)
+
+	for k := range expectResponse {
+		assert.Equal(t, expectResponse[k], response[k])
+	}
+
+	for k := range expectResponseData {
+		assert.Equal(t, expectResponseData[k], response["data"].(map[string]interface{})[k])
+	}
 }
 
 func TestMain(m *testing.M) {
