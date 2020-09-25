@@ -12,13 +12,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func performRequest(r http.Handler, method, path string) *httptest.ResponseRecorder {
-	req, _ := http.NewRequest(method, path, nil)
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-	return w
-}
-
 func TestUserMeUnauthorized(t *testing.T) {
 	body := map[string]interface{}( gin.H{
 		"code": float64(401),
@@ -27,12 +20,16 @@ func TestUserMeUnauthorized(t *testing.T) {
 	conf.Init()
 	router := server.NewRouter()
 
-	w := performRequest(router, "GET", "/api/v1/user/me")
+	request, err := http.NewRequest(http.MethodGet, "/api/v1/user/me", nil)
+	assert.Nil(t, err)
 
-	assert.Equal(t, http.StatusOK, w.Code)
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+
+	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	var response map[string]interface{}
-	err := json.Unmarshal([]byte(w.Body.String()), &response)
+	err = json.Unmarshal([]byte(recorder.Body.String()), &response)
 
 	assert.Nil(t, err)
 	assert.Equal(t, body, response)
