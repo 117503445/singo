@@ -2,10 +2,13 @@ package test
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/spf13/viper"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"singo/conf"
+	"singo/model"
 	"singo/server"
 	"singo/service"
 	"strings"
@@ -89,6 +92,17 @@ func TestRegister(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	conf.Init()
+	dbName := viper.GetString("mysql.dbname")
+	if !strings.Contains(dbName, "test") {
+		panic("本测试会清空数据库,禁止在 数据库名 不包含 test 的 数据库上运行")
+	}
+
+	if _, err := model.Exec(fmt.Sprintf("drop database %v", dbName)); err != nil {
+		panic("删除数据库失败")
+	}
+
+	model.Database()
+
 	exitCode := m.Run()
 	os.Exit(exitCode)
 }
