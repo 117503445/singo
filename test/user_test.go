@@ -91,6 +91,46 @@ func TestRegister(t *testing.T) {
 	}
 
 }
+func TestLogin(t *testing.T) {
+	router := server.NewRouter()
+
+	userRegisterService := service.UserRegisterDto{
+		UserName: "user1",
+		Password: "pass1",
+	}
+
+	body, _ := json.Marshal(userRegisterService)
+	request, err := http.NewRequest(http.MethodPost, "/api/v1/user/register", strings.NewReader(string(body)))
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+
+	userLoginDto := service.UserLoginDto{
+		UserName: "user1",
+		Password: "pass1",
+	}
+	body, _ = json.Marshal(userLoginDto)
+	request, err = http.NewRequest(http.MethodPost, "/api/v1/user/login", strings.NewReader(string(body)))
+	assert.Nil(t, err)
+
+	recorder = httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+	assert.Equal(t, http.StatusOK, recorder.Code)
+
+	var response map[string]interface{}
+	err = json.Unmarshal([]byte(recorder.Body.String()), &response)
+	assert.Nil(t, err)
+
+	expectResponse := map[string]interface{}( gin.H{
+		"code": float64(200),
+	})
+
+	for k := range expectResponse {
+		assert.Equal(t, expectResponse[k], response[k])
+	}
+
+}
 func TestMain(m *testing.M) {
 	conf.Init()
 	dbName := viper.GetString("mysql.dbname")
