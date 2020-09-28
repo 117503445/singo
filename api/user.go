@@ -12,9 +12,19 @@ import (
 // UserRegister 用户注册接口
 func UserRegister(c *gin.Context) {
 	var service service.UserRegisterDto
+
+
 	if err := c.ShouldBindJSON(&service); err == nil {
-		res := service.Register()
-		c.JSON(200, res)
+
+		count := int64(0)
+		model.DB.Model(&model.User{}).Where("username = ?", service.UserName).Count(&count)
+		if count > 0 {
+			c.JSON(200, gin.H{"message": "Username has already exists."})
+			return
+		}
+		
+		user, _ := service.Register()
+		c.JSON(200, user)
 	} else {
 		c.JSON(200, ErrorResponse(err))
 	}

@@ -37,23 +37,14 @@ func (service *UserRegisterDto) valid() *serializer.Response {
 }
 
 // Register 用户注册
-func (service *UserRegisterDto) Register() serializer.Response {
+func (service *UserRegisterDto) Register() (model.User, error) {
 	user := model.User{
 		Username: service.UserName,
 	}
 
-	// 表单验证
-	if err := service.valid(); err != nil {
-		return *err
-	}
-
 	// 加密密码
 	if err := user.SetPassword(service.Password); err != nil {
-		return serializer.Err(
-			serializer.CodeEncryptError,
-			"密码加密失败",
-			err,
-		)
+		return user, err
 	}
 
 	roleName := "user"
@@ -67,8 +58,8 @@ func (service *UserRegisterDto) Register() serializer.Response {
 
 	// 创建用户
 	if err := model.DB.Create(&user).Error; err != nil {
-		return serializer.ParamErr("注册失败", err)
+		return user, err
 	}
 
-	return serializer.BuildUserResponse(user)
+	return user, nil
 }
