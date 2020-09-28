@@ -3,11 +3,10 @@ package model
 import (
 	"database/sql"
 	"fmt"
-	"singo/util"
-	"time"
-
-	"github.com/jinzhu/gorm"
 	"github.com/spf13/viper"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+	"singo/util"
 
 	//
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -31,21 +30,21 @@ func Database() {
 	}
 
 	dsn := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8&parseTime=True&loc=Local", username, password, host, port, dbname)
-	ormDB, err := gorm.Open("mysql", dsn)
+	ormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	// Error
 	if err != nil {
 		util.Log().Panic("连接数据库不成功", err)
 	}
-
-	ormDB.LogMode(true)
-
-	//设置连接池
-	//空闲
-	ormDB.DB().SetMaxIdleConns(50)
-	//打开
-	ormDB.DB().SetMaxOpenConns(100)
-	//超时
-	ormDB.DB().SetConnMaxLifetime(time.Second * 30)
+	//
+	//ormDB.LogMode(true)
+	//
+	////设置连接池
+	////空闲
+	//ormDB.DB().SetMaxIdleConns(50)
+	////打开
+	//ormDB.DB().SetMaxOpenConns(100)
+	////超时
+	//ormDB.DB().SetConnMaxLifetime(time.Second * 30)
 
 	DB = ormDB
 
