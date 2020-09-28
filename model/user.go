@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -8,10 +9,11 @@ import (
 // User 用户模型
 type User struct {
 	gorm.Model
-	UserName       string
-	PasswordDigest string
-	Nickname       string
-	Avatar         string `gorm:"size:1000"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Roles    []Role `json:"role" gorm:"many2many:user_role"`
+	Nickname string
+	Avatar   string `gorm:"size:1000"`
 }
 
 const (
@@ -32,12 +34,24 @@ func (user *User) SetPassword(password string) error {
 	if err != nil {
 		return err
 	}
-	user.PasswordDigest = string(bytes)
+	user.Password = string(bytes)
 	return nil
 }
 
 // CheckPassword 校验密码
 func (user *User) CheckPassword(password string) bool {
-	err := bcrypt.CompareHashAndPassword([]byte(user.PasswordDigest), []byte(password))
+	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	return err == nil
+}
+
+// QueryByUsername 用 Username 获取用户
+func QueryByUsername(username string) (User, error) {
+	var user User
+	result := DB.Where("username = ?", username).First(&user)
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		return user, result.Error
+	}
+
+	return user, nil
 }

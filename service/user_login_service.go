@@ -1,21 +1,21 @@
 package service
 
 import (
+	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/gin-gonic/gin"
 	"singo/model"
-	"singo/serializer"
 
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
 )
 
-// UserLoginService 管理用户登录的服务
-type UserLoginService struct {
-	UserName string `form:"user_name" json:"user_name" binding:"required,min=5,max=30"`
-	Password string `form:"password" json:"password" binding:"required,min=8,max=40"`
+// UserLoginDto 管理用户登录的服务
+type UserLoginDto struct {
+	UserName string `form:"username" json:"username" binding:"required,min=5,max=30"`
+	Password string `form:"password" json:"password" binding:"required,min=4,max=40"`
 }
 
 // setSession 设置session
-func (service *UserLoginService) setSession(c *gin.Context, user model.User) {
+func (service *UserLoginDto) setSession(c *gin.Context, user model.User) {
 	s := sessions.Default(c)
 	s.Clear()
 	s.Set("user_id", user.ID)
@@ -23,19 +23,19 @@ func (service *UserLoginService) setSession(c *gin.Context, user model.User) {
 }
 
 // Login 用户登录函数
-func (service *UserLoginService) Login(c *gin.Context) serializer.Response {
-	var user model.User
-
-	if err := model.DB.Where("user_name = ?", service.UserName).First(&user).Error; err != nil {
-		return serializer.ParamErr("账号或密码错误", nil)
+func Login(c *gin.Context) (interface{}, error) {
+	var userLoginDto UserLoginDto
+	if err := c.ShouldBindJSON(&userLoginDto); err != nil {
+		return "", jwt.ErrMissingLoginValues
 	}
-
-	if user.CheckPassword(service.Password) == false {
-		return serializer.ParamErr("账号或密码错误", nil)
+	username := userLoginDto.UserName
+	password := userLoginDto.Password
+	queryUser, err := model.QueryByUsername(username)
+	if err != nil {
+		return nil, jwt.ErrFailedAuthentication
 	}
-
-	// 设置session
-	service.setSession(c, user)
-
-	return serializer.BuildUserResponse(user)
+	if queryUser.CheckPassword(password) {
+		return &queryUser, nil
+	}
+	return nil, jwt.ErrFailedAuthentication
 }

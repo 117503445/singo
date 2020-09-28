@@ -26,11 +26,11 @@ func NewRouter() *gin.Engine {
 		v1.POST("user/register", api.UserRegister)
 
 		// 用户登录
-		v1.POST("user/login", api.UserLogin)
+		v1.POST("user/login", middleware.JwtMiddleware.LoginHandler)
 
 		// 需要登录保护的
 		auth := v1.Group("")
-		auth.Use(middleware.AuthRequired())
+		auth.Use(middleware.JwtMiddleware.MiddlewareFunc())
 		{
 			// User Routing
 			auth.GET("user/me", api.UserMe)

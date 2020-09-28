@@ -63,7 +63,7 @@ func TestPing(t *testing.T) {
 func TestRegister(t *testing.T) {
 	router := server.NewRouter()
 
-	userRegisterService := service.UserRegisterService{
+	userRegisterService := service.UserRegisterDto{
 		Nickname: "Nickname",
 		UserName: "UserName",
 		Password: "Password",

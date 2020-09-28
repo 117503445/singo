@@ -16,7 +16,6 @@ type User struct {
 func BuildUser(user model.User) User {
 	return User{
 		ID:        user.ID,
-		UserName:  user.UserName,
 		Nickname:  user.Nickname,
 		Avatar:    user.Avatar,
 		CreatedAt: user.CreatedAt.Unix(),

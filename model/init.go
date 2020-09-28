@@ -7,9 +7,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"singo/util"
-
-	//
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"strings"
 )
 
 // DB 数据库链接单例
@@ -22,7 +20,12 @@ func Database() {
 	port := viper.Get("mysql.port")
 	username := viper.Get("mysql.username")
 	password := viper.Get("mysql.password")
-	dbname := viper.Get("mysql.dbname")
+	dbname := viper.GetString("mysql.dbname")
+
+	if strings.Contains(dbname, "test") {
+		util.Log().Info("dbname contain \"test\", drop and create new\n")
+		_, _ = Exec("drop database " + dbname)
+	}
 
 	_, err := Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %v", dbname))
 	if err != nil {
