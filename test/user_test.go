@@ -39,7 +39,6 @@ func TestUserMeUnauthorized(t *testing.T) {
 	})
 	assert.Equal(t, expectResponse, response)
 }
-
 func TestPing(t *testing.T) {
 	router := server.NewRouter()
 
@@ -101,7 +100,6 @@ func TestRegister(t *testing.T) {
 		assert.Equal(t, expectResponseData[k], response["data"].(map[string]interface{})[k])
 	}
 }
-
 func TestMain(m *testing.M) {
 	conf.Init()
 	dbName := viper.GetString("mysql.dbname")
@@ -113,7 +111,7 @@ func TestMain(m *testing.M) {
 		panic("删除数据库失败")
 	}
 
-	model.Database()
+	model.Database()//重新创建空白的数据库
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
