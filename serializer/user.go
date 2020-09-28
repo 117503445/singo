@@ -18,7 +18,6 @@ func BuildUser(user model.User) User {
 		ID:        user.ID,
 		UserName:  user.UserName,
 		Nickname:  user.Nickname,
-		Status:    user.Status,
 		Avatar:    user.Avatar,
 		CreatedAt: user.CreatedAt.Unix(),
 	}
