@@ -41,24 +41,13 @@ func TestUserMeUnauthorized(t *testing.T) {
 }
 func TestPing(t *testing.T) {
 	router := server.NewRouter()
+	_, response := httpPostJson(t, router, "/api/v1/ping", nil)
 
-	request, err := http.NewRequest(http.MethodPost, "/api/v1/ping", nil)
-	assert.Nil(t, err)
-
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, request)
-
-	assert.Equal(t, http.StatusOK, recorder.Code)
-
-	var response map[string]interface{}
-	err = json.Unmarshal([]byte(recorder.Body.String()), &response)
-	assert.Nil(t, err)
-
-	expectResponse := map[string]interface{}( gin.H{
+	expectResponse := gin.H{
 		"code": float64(0),
 		"msg":  "Pong",
-	})
-	assert.Equal(t, expectResponse, response)
+	}
+	assert.Equal(t, map[string]interface{}(expectResponse), response)
 }
 func TestRegister(t *testing.T) {
 	router := server.NewRouter()
@@ -68,23 +57,14 @@ func TestRegister(t *testing.T) {
 		Password: "pass1",
 	}
 
-	body, _ := json.Marshal(userRegisterService)
-	request, err := http.NewRequest(http.MethodPost, "/api/v1/user/register", strings.NewReader(string(body)))
-	assert.Nil(t, err)
+	code, response := httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
 
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, request)
+	assert.Equal(t, http.StatusOK, code)
 
-	assert.Equal(t, http.StatusOK, recorder.Code)
-
-	var response map[string]interface{}
-	err = json.Unmarshal([]byte(recorder.Body.String()), &response)
-	assert.Nil(t, err)
-
-	expectResponse := map[string]interface{}( gin.H{
+	expectResponse := gin.H{
 		"ID":       float64(1),
 		"username": "user1",
-	})
+	}
 
 	for k := range expectResponse {
 		assert.Equal(t, expectResponse[k], response[k])
@@ -99,32 +79,20 @@ func TestLogin(t *testing.T) {
 		Password: "pass1",
 	}
 
-	body, _ := json.Marshal(userRegisterService)
-	request, err := http.NewRequest(http.MethodPost, "/api/v1/user/register", strings.NewReader(string(body)))
-	assert.Nil(t, err)
-
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, request)
+	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
 
 	userLoginDto := service.UserLoginDto{
 		UserName: "user1",
 		Password: "pass1",
 	}
-	body, _ = json.Marshal(userLoginDto)
-	request, err = http.NewRequest(http.MethodPost, "/api/v1/user/login", strings.NewReader(string(body)))
-	assert.Nil(t, err)
 
-	recorder = httptest.NewRecorder()
-	router.ServeHTTP(recorder, request)
-	assert.Equal(t, http.StatusOK, recorder.Code)
+	code, response := httpPostJson(t, router, "/api/v1/user/login", userLoginDto)
 
-	var response map[string]interface{}
-	err = json.Unmarshal([]byte(recorder.Body.String()), &response)
-	assert.Nil(t, err)
+	assert.Equal(t, http.StatusOK, code)
 
-	expectResponse := map[string]interface{}( gin.H{
+	expectResponse := gin.H{
 		"code": float64(200),
-	})
+	}
 
 	for k := range expectResponse {
 		assert.Equal(t, expectResponse[k], response[k])
@@ -146,4 +114,23 @@ func TestMain(m *testing.M) {
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
+}
+
+func httpPost(t *testing.T, router *gin.Engine, url string, body string) (responseCode int, responseText string) {
+	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(body))
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+	return recorder.Code, recorder.Body.String()
+}
+func httpPostJson(t *testing.T, router *gin.Engine, url string, body interface{}) (responseCode int, responseMap map[string]interface{}) {
+	js, _ := json.Marshal(body)
+	code, text := httpPost(t, router, url, string(js))
+
+	var response map[string]interface{}
+	err := json.Unmarshal([]byte(text), &response)
+	assert.Nil(t, err)
+
+	return code, response
 }
