@@ -22,7 +22,7 @@ func UserRegister(c *gin.Context) {
 			c.JSON(200, gin.H{"message": "Username has already exists."})
 			return
 		}
-		
+
 		user, _ := service.Register()
 		c.JSON(200, user)
 	} else {

@@ -27,15 +27,15 @@ func TestUserMeUnauthorized(t *testing.T) {
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, request)
 
-	assert.Equal(t, http.StatusOK, recorder.Code)
+	assert.Equal(t, http.StatusUnauthorized, recorder.Code)
 
 	var response map[string]interface{}
 	err = json.Unmarshal([]byte(recorder.Body.String()), &response)
 	assert.Nil(t, err)
 
 	expectResponse := map[string]interface{}( gin.H{
-		"code": float64(401),
-		"msg":  "未登录",
+		"code":    float64(401),
+		"message": "cookie token is empty",
 	})
 	assert.Equal(t, expectResponse, response)
 }
@@ -64,9 +64,8 @@ func TestRegister(t *testing.T) {
 	router := server.NewRouter()
 
 	userRegisterService := service.UserRegisterDto{
-		Nickname: "Nickname",
-		UserName: "UserName",
-		Password: "Password",
+		UserName: "user1",
+		Password: "pass1",
 	}
 
 	body, _ := json.Marshal(userRegisterService)
@@ -83,22 +82,14 @@ func TestRegister(t *testing.T) {
 	assert.Nil(t, err)
 
 	expectResponse := map[string]interface{}( gin.H{
-		"code": float64(0),
+		"ID":       float64(1),
+		"username": "user1",
 	})
-	expectResponseData := map[string]interface{}( gin.H{
-		"id":        float64(1),
-		"avatar":    "",
-		"user_name": "UserName",
-	},
-	)
 
 	for k := range expectResponse {
 		assert.Equal(t, expectResponse[k], response[k])
 	}
 
-	for k := range expectResponseData {
-		assert.Equal(t, expectResponseData[k], response["data"].(map[string]interface{})[k])
-	}
 }
 func TestMain(m *testing.M) {
 	conf.Init()
@@ -111,7 +102,7 @@ func TestMain(m *testing.M) {
 		panic("删除数据库失败")
 	}
 
-	model.Database()//重新创建空白的数据库
+	model.Database() //重新创建空白的数据库
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
