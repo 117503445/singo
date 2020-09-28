@@ -49,7 +49,7 @@ func TestPing(t *testing.T) {
 	}
 	assert.Equal(t, map[string]interface{}(expectResponse), response)
 }
-func TestRegister(t *testing.T) {
+func TestUserRegister(t *testing.T) {
 	router := server.NewRouter()
 
 	userRegisterService := service.UserRegisterDto{
@@ -71,7 +71,7 @@ func TestRegister(t *testing.T) {
 	}
 
 }
-func TestLogin(t *testing.T) {
+func TestUserLogin(t *testing.T) {
 	router := server.NewRouter()
 
 	userRegisterService := service.UserRegisterDto{
@@ -92,6 +92,37 @@ func TestLogin(t *testing.T) {
 
 	expectResponse := gin.H{
 		"code": float64(200),
+	}
+
+	for k := range expectResponse {
+		assert.Equal(t, expectResponse[k], response[k])
+	}
+
+}
+func TestUserMe(t *testing.T) {
+	router := server.NewRouter()
+
+	userRegisterService := service.UserRegisterDto{
+		UserName: "user1",
+		Password: "pass1",
+	}
+
+	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
+
+	userLoginDto := service.UserLoginDto{
+		UserName: "user1",
+		Password: "pass1",
+	}
+
+	_, response := httpPostJson(t, router, "/api/v1/user/login", userLoginDto)
+	authorization := "Bearer " + response["token"].(string)
+
+	code, response := httpGetJson(t, router, "/api/v1/user/me", map[string]string{"Authorization": authorization})
+	assert.Equal(t, http.StatusOK, code)
+
+	expectResponse := gin.H{
+		"ID":       float64(1),
+		"username": "user1",
 	}
 
 	for k := range expectResponse {
@@ -127,6 +158,26 @@ func httpPost(t *testing.T, router *gin.Engine, url string, body string) (respon
 func httpPostJson(t *testing.T, router *gin.Engine, url string, body interface{}) (responseCode int, responseMap map[string]interface{}) {
 	js, _ := json.Marshal(body)
 	code, text := httpPost(t, router, url, string(js))
+
+	var response map[string]interface{}
+	err := json.Unmarshal([]byte(text), &response)
+	assert.Nil(t, err)
+
+	return code, response
+}
+
+func httpGet(t *testing.T, router *gin.Engine, url string, headers map[string]string) (responseCode int, responseText string) {
+	request, err := http.NewRequest(http.MethodGet, url, nil)
+	assert.Nil(t, err)
+	for key, value := range headers {
+		request.Header.Add(key, value)
+	}
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+	return recorder.Code, recorder.Body.String()
+}
+func httpGetJson(t *testing.T, router *gin.Engine, url string, headers map[string]string) (responseCode int, responseMap map[string]interface{}) {
+	code, text := httpGet(t, router, url, headers)
 
 	var response map[string]interface{}
 	err := json.Unmarshal([]byte(text), &response)
