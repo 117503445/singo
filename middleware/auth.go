@@ -26,7 +26,7 @@ func init() {
 	}
 
 	JwtMiddleware, err = jwt.New(&jwt.GinJWTMiddleware{
-		Realm:       "test zone",
+		Realm:       "singo zone",
 		Key:         []byte(jwtPassword),
 		Timeout:     time.Hour,
 		MaxRefresh:  time.Hour,
