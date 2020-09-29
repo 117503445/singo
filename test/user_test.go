@@ -43,13 +43,10 @@ func TestUserMeUnauthorized(t *testing.T) {
 }
 func TestPing(t *testing.T) {
 	router := server.NewRouter()
-	_, response := httpPostJson(t, router, "/api/v1/ping", nil)
+	_, response := httpPost(t, router, "/api/v1/ping", "")
 
-	expectResponse := gin.H{
-		"code": float64(0),
-		"msg":  "Pong",
-	}
-	assert.Equal(t, map[string]interface{}(expectResponse), response)
+	expectResponse := "\"pong\""
+	assert.Equal(t, expectResponse, response)
 }
 func TestUserRegister(t *testing.T) {
 	router := server.NewRouter()
