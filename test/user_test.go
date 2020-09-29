@@ -62,7 +62,7 @@ func TestUserRegister(t *testing.T) {
 	assert.Equal(t, http.StatusOK, code)
 
 	expectResponse := gin.H{
-		"ID":       float64(2),
+		"id":       float64(2),
 		"username": "user1",
 	}
 
@@ -123,7 +123,7 @@ func TestUserMe(t *testing.T) {
 	assert.Equal(t, http.StatusOK, code)
 
 	expectResponse := gin.H{
-		"ID":       float64(2),
+		"id":       float64(2),
 		"username": "user1",
 		"avatar":   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}

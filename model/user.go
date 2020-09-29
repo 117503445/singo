@@ -11,7 +11,7 @@ type User struct {
 	gorm.Model
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Roles    []Role `json:"role" gorm:"many2many:user_role"`
+	Roles    []Role `json:"roles" gorm:"many2many:user_role"`
 	Avatar   string `json:"avatar" gorm:"size:1000"`
 }
 

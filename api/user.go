@@ -1,37 +1,53 @@
 package api
 
 import (
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"singo/dto"
 	"singo/model"
 	"singo/serializer"
 	"singo/service"
-
-	"github.com/gin-gonic/gin"
 )
 
 // UserRegister 用户注册接口
 func UserRegister(c *gin.Context) {
-	var userRegisterIn dto.UserRegisterIn
-
-	if err := c.ShouldBindJSON(&userRegisterIn); err == nil {
-		count := int64(0)
-		model.DB.Model(&model.User{}).Where("username = ?", userRegisterIn.UserName).Count(&count)
-		if count > 0 {
-			c.JSON(http.StatusBadRequest, serializer.Err(serializer.StatusUsernameRepeat, "Username has already exists.", nil))
-			return
-		}
-
-		user, _ := service.Register(&userRegisterIn)
-		c.JSON(http.StatusOK, user)
-	} else {
+	userRegisterIn := &dto.UserRegisterIn{}
+	var err error
+	if err = c.ShouldBindJSON(&userRegisterIn); err != nil {
 		c.JSON(http.StatusBadRequest, serializer.Err(http.StatusBadRequest, "bad UserRegisterIn dto.", err))
+		return
+	}
+	count := int64(0)
+	model.DB.Model(&model.User{}).Where("username = ?", userRegisterIn.UserName).Count(&count)
+	if count > 0 {
+		c.JSON(http.StatusBadRequest, serializer.Err(serializer.StatusUsernameRepeat, "Username has already exists.", nil))
+		return
+	}
+
+	var user *model.User
+	if user, err = userRegisterIn.ToUser(); err != nil {
+		c.JSON(http.StatusInternalServerError, serializer.Err(http.StatusInternalServerError, "userRegisterInToUser failed", err))
+		return
+	}
+	if user, err = service.Register(user); err != nil {
+		c.JSON(http.StatusBadRequest, serializer.Err(http.StatusBadRequest, "Register failed", err))
+		return
+	}
+
+	if userOut, err := dto.UserToUserOut(user); err == nil {
+		c.JSON(http.StatusOK, userOut)
+	} else {
+		c.JSON(http.StatusInternalServerError, serializer.Err(http.StatusInternalServerError, "UserToUserOut failed", err))
 	}
 }
 
 // UserMe 用户详情
 func UserMe(c *gin.Context) {
 	user := service.CurrentUser(c)
-	model.DB.Preload("Roles").Find(&user)
-	c.JSON(200, user)
+	if userOut, err := dto.UserToUserOut(user); err == nil {
+		c.JSON(http.StatusOK, userOut)
+	} else {
+		c.JSON(http.StatusInternalServerError, serializer.Err(http.StatusInternalServerError, "UserToUserOut failed", err))
+	}
+
 }

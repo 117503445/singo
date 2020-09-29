@@ -1,26 +1,13 @@
 package service
 
 import (
-	"github.com/devfeel/mapper"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"singo/dto"
 	"singo/model"
-	"singo/util"
 )
 
 // Register 用户注册
-func Register(service *dto.UserRegisterIn) (*model.User, error) {
-	user := &model.User{}
-	if err := mapper.AutoMapper(service, user); err != nil {
-		util.Log().Panic("m", err)
-	}
-
-	// 加密密码
-	if err := user.SetPassword(service.Password); err != nil {
-		return user, err
-	}
-
+func Register(user *model.User) (*model.User, error) {
 	roleName := "user"
 	role, err := model.ReadRoleByName(roleName)
 	if err == gorm.ErrRecordNotFound {
