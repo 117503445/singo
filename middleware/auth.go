@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"singo/model"
-	"singo/serializer"
 	"singo/service"
 	"time"
 )
@@ -25,22 +24,7 @@ func CurrentUser() gin.HandlerFunc {
 		c.Next()
 	}
 }
-
-// AuthRequired 需要登录
-func AuthRequired() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if user, _ := c.Get("user"); user != nil {
-			if _, ok := user.(*model.User); ok {
-				c.Next()
-				return
-			}
-		}
-
-		c.JSON(200, serializer.CheckLogin())
-		c.Abort()
-	}
-}
-
+	
 var JwtMiddleware *jwt.GinJWTMiddleware
 
 func init() {
@@ -48,7 +32,7 @@ func init() {
 	var err error
 	JwtMiddleware, err = jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "test zone",
-		Key:         []byte("secret key"),//todo
+		Key:         []byte("secret key"), //todo
 		Timeout:     time.Hour,
 		MaxRefresh:  time.Hour,
 		IdentityKey: identityKey,
@@ -102,12 +86,12 @@ func init() {
 	})
 
 	if err != nil {
-		log.Fatal("JWT Error:" + err.Error())//todo log
+		log.Fatal("JWT Error:" + err.Error()) //todo log
 	}
 
 	errInit := JwtMiddleware.MiddlewareInit()
 
 	if errInit != nil {
-		log.Fatal("authMiddleware.MiddlewareInit() Error:" + errInit.Error())//todo log
+		log.Fatal("authMiddleware.MiddlewareInit() Error:" + errInit.Error()) //todo log
 	}
 }
