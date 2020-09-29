@@ -72,7 +72,6 @@ func createAdminUser() {
 	user := User{
 		Username: "admin",
 		Roles:    []Role{{Name: "admin"}, {Name: "user"}},
-		Nickname: "admin",
 		Avatar:   "",
 	}
 

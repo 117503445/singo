@@ -12,8 +12,7 @@ type User struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Roles    []Role `json:"role" gorm:"many2many:user_role"`
-	Nickname string
-	Avatar   string `gorm:"size:1000"`
+	Avatar   string `json:"avatar" gorm:"size:1000"`
 }
 
 const (

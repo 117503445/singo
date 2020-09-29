@@ -54,6 +54,7 @@ func TestUserRegister(t *testing.T) {
 	userRegisterService := dto.UserRegisterIn{
 		UserName: "user1",
 		Password: "pass1",
+		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
 	code, response := httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
@@ -76,6 +77,7 @@ func TestUserLogin(t *testing.T) {
 	userRegisterService := dto.UserRegisterIn{
 		UserName: "user1",
 		Password: "pass1",
+		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
 	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
@@ -104,6 +106,7 @@ func TestUserMe(t *testing.T) {
 	userRegisterService := dto.UserRegisterIn{
 		UserName: "user1",
 		Password: "pass1",
+		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
 	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
@@ -122,6 +125,7 @@ func TestUserMe(t *testing.T) {
 	expectResponse := gin.H{
 		"ID":       float64(2),
 		"username": "user1",
+		"avatar":   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
 	for k := range expectResponse {
