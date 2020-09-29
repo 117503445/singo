@@ -4,8 +4,8 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
+	"singo/dto"
 	"singo/model"
-	"singo/service"
 	"singo/util"
 	"time"
 )
@@ -49,7 +49,22 @@ func init() {
 			}
 			return &u
 		},
-		Authenticator: service.Login,
+		Authenticator: func(c *gin.Context) (interface{}, error) {
+			var userLoginDto dto.UserLoginIn
+			if err := c.ShouldBindJSON(&userLoginDto); err != nil {
+				return "", jwt.ErrMissingLoginValues
+			}
+			username := userLoginDto.UserName
+			password := userLoginDto.Password
+			queryUser, err := model.QueryByUsername(username)
+			if err != nil {
+				return nil, jwt.ErrFailedAuthentication
+			}
+			if queryUser.CheckPassword(password) {
+				return &queryUser, nil
+			}
+			return nil, jwt.ErrFailedAuthentication
+		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
 			if _, ok := data.(*model.User); ok {
 				return true
