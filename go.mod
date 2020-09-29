@@ -5,7 +5,6 @@ go 1.12
 require (
 	github.com/appleboy/gin-jwt/v2 v2.6.4
 	github.com/gin-contrib/cors v1.3.0
-	github.com/gin-contrib/sessions v0.0.0-20190512062852-3cb4c4f2d615
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-redis/redis v6.15.3+incompatible
 	github.com/spf13/viper v1.7.1

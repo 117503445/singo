@@ -5,17 +5,13 @@ import (
 	"singo/middleware"
 
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 )
 
 // NewRouter 路由配置
 func NewRouter() *gin.Engine {
 	r := gin.Default()
 
-	// 中间件, 顺序不能改
-	r.Use(middleware.Session(viper.GetString("session.secret")))
 	r.Use(middleware.Cors())
-	r.Use(middleware.CurrentUser())
 
 	// 路由
 	v1 := r.Group("/api/v1")

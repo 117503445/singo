@@ -2,28 +2,12 @@ package middleware
 
 import (
 	jwt "github.com/appleboy/gin-jwt/v2"
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"singo/model"
 	"singo/service"
 	"singo/util"
 	"time"
 )
-
-// CurrentUser 获取登录用户
-func CurrentUser() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		session := sessions.Default(c)
-		uid := session.Get("user_id")
-		if uid != nil {
-			user, err := model.GetUser(uid)
-			if err == nil {
-				c.Set("user", &user)
-			}
-		}
-		c.Next()
-	}
-}
 
 var JwtMiddleware *jwt.GinJWTMiddleware
 
