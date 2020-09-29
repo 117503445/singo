@@ -4,9 +4,9 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"log"
 	"singo/model"
 	"singo/service"
+	"singo/util"
 	"time"
 )
 
@@ -24,7 +24,7 @@ func CurrentUser() gin.HandlerFunc {
 		c.Next()
 	}
 }
-	
+
 var JwtMiddleware *jwt.GinJWTMiddleware
 
 func init() {
@@ -86,12 +86,10 @@ func init() {
 	})
 
 	if err != nil {
-		log.Fatal("JWT Error:" + err.Error()) //todo log
+		util.Log().Error("jwt.New failed", err)
 	}
 
-	errInit := JwtMiddleware.MiddlewareInit()
-
-	if errInit != nil {
-		log.Fatal("authMiddleware.MiddlewareInit() Error:" + errInit.Error()) //todo log
+	if err = JwtMiddleware.MiddlewareInit(); err != nil {
+		util.Log().Error("authMiddleware.MiddlewareInit()", err)
 	}
 }
