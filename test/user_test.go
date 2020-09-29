@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path"
 	"singo/conf"
 	"singo/model"
 	"singo/server"
@@ -150,12 +149,17 @@ func TestMain(m *testing.M) {
 	os.Exit(exitCode)
 }
 func TestCreateAdminPasswordTxt(t *testing.T) {
-	filePath := path.Dir(util.GetCurrentPath()) + "/data/password/admin.txt"
+	filePath := util.FilePasswordAdmin
 	bytes, err := ioutil.ReadFile(filePath)
 	assert.Nil(t, err)
 	assert.Equal(t, 12, len(string(bytes)))
 }
-
+func TestCreateJwtPasswordTxt(t *testing.T) {
+	filePath := util.FilePasswordJWT
+	bytes, err := ioutil.ReadFile(filePath)
+	assert.Nil(t, err)
+	assert.Equal(t, 12, len(string(bytes)))
+}
 func httpPost(t *testing.T, router *gin.Engine, url string, body string) (responseCode int, responseText string) {
 	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(body))
 	assert.Nil(t, err)

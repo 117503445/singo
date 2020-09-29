@@ -59,9 +59,9 @@ func createAdminUser() {
 	var err error
 
 	password := util.RandStringRunes(12)
-	dstFile, _ := os.Create(util.FilePasswordAdmin)
-	defer dstFile.Close()
-	if _, err = dstFile.WriteString(password); err != nil {
+	file, _ := os.Create(util.FilePasswordAdmin)
+	defer file.Close()
+	if _, err = file.WriteString(password); err != nil {
 		util.Log().Error("Can't write admin default password", err)
 	}
 

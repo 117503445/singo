@@ -3,6 +3,7 @@ package middleware
 import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"io/ioutil"
 	"singo/model"
 	"singo/service"
 	"singo/util"
@@ -14,9 +15,19 @@ var JwtMiddleware *jwt.GinJWTMiddleware
 func init() {
 	identityKey := "user"
 	var err error
+
+	var jwtPassword string
+	bytes, err := ioutil.ReadFile(util.FilePasswordJWT)
+	if err == nil && len(string(bytes)) == 12 {
+		jwtPassword = string(bytes)
+	} else {
+		jwtPassword = util.RandStringRunes(12)
+		_ = ioutil.WriteFile(util.FilePasswordJWT, []byte(jwtPassword), 0777)
+	}
+
 	JwtMiddleware, err = jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "test zone",
-		Key:         []byte("secret key"), //todo
+		Key:         []byte(jwtPassword),
 		Timeout:     time.Hour,
 		MaxRefresh:  time.Hour,
 		IdentityKey: identityKey,
