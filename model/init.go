@@ -55,6 +55,10 @@ func InitDatabase() {
 	migration()
 	createAdminUser()
 }
+
+//createAdminUser 创建管理员账号
+//用户名 admin,密码随机12位,权限 Admin,User
+//输出在 data/password/admin.txt,
 func createAdminUser() {
 	var err error
 
