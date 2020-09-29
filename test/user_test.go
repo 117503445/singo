@@ -9,9 +9,9 @@ import (
 	"net/http/httptest"
 	"os"
 	"singo/conf"
+	"singo/dto"
 	"singo/model"
 	"singo/server"
-	"singo/service"
 	"singo/util"
 	"strings"
 	"testing"
@@ -54,7 +54,7 @@ func TestPing(t *testing.T) {
 func TestUserRegister(t *testing.T) {
 	router := server.NewRouter()
 
-	userRegisterService := service.UserRegisterDto{
+	userRegisterService := dto.UserRegisterIn{
 		UserName: "user1",
 		Password: "pass1",
 	}
@@ -76,14 +76,14 @@ func TestUserRegister(t *testing.T) {
 func TestUserLogin(t *testing.T) {
 	router := server.NewRouter()
 
-	userRegisterService := service.UserRegisterDto{
+	userRegisterService := dto.UserRegisterIn{
 		UserName: "user1",
 		Password: "pass1",
 	}
 
 	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
 
-	userLoginDto := service.UserLoginDto{
+	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
 		Password: "pass1",
 	}
@@ -104,14 +104,14 @@ func TestUserLogin(t *testing.T) {
 func TestUserMe(t *testing.T) {
 	router := server.NewRouter()
 
-	userRegisterService := service.UserRegisterDto{
+	userRegisterService := dto.UserRegisterIn{
 		UserName: "user1",
 		Password: "pass1",
 	}
 
 	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
 
-	userLoginDto := service.UserLoginDto{
+	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
 		Password: "pass1",
 	}

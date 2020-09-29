@@ -1,6 +1,7 @@
 package api
 
 import (
+	"singo/dto"
 	"singo/model"
 	"singo/service"
 
@@ -9,19 +10,18 @@ import (
 
 // UserRegister 用户注册接口
 func UserRegister(c *gin.Context) {
-	var service service.UserRegisterDto
+	var userRegisterIn dto.UserRegisterIn
 
-
-	if err := c.ShouldBindJSON(&service); err == nil {
+	if err := c.ShouldBindJSON(&userRegisterIn); err == nil {
 
 		count := int64(0)
-		model.DB.Model(&model.User{}).Where("username = ?", service.UserName).Count(&count)
+		model.DB.Model(&model.User{}).Where("username = ?", userRegisterIn.UserName).Count(&count)
 		if count > 0 {
 			c.JSON(200, gin.H{"message": "Username has already exists."})
 			return
 		}
 
-		user, _ := service.Register()
+		user, _ := service.Register(&userRegisterIn)
 		c.JSON(200, user)
 	} else {
 		c.JSON(200, ErrorResponse(err))
