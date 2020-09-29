@@ -7,7 +7,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"os"
-	"path"
 	"singo/util"
 	"strings"
 )
@@ -58,14 +57,9 @@ func InitDatabase() {
 }
 func createAdminUser() {
 	var err error
-	dirPath := path.Dir(util.GetCurrentPath()) + "/data/password"
 
-	if err = os.MkdirAll(dirPath, os.ModePerm); err != nil {
-		util.Log().Panic("can't create dir data/password", err)
-	}
 	password := util.RandStringRunes(12)
-	fileName := dirPath + "/admin.txt"
-	dstFile, _ := os.Create(fileName)
+	dstFile, _ := os.Create(util.FilePasswordAdmin)
 	defer dstFile.Close()
 	if _, err = dstFile.WriteString(password); err != nil {
 		util.Log().Error("Can't write admin default password", err)
