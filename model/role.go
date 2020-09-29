@@ -10,7 +10,7 @@ type Role struct {
 	Name string `json:"name"`
 }
 
-func QueryRoleByName(roleName string) (Role, error) {
+func ReadRoleByName(roleName string) (Role, error) {
 	var role Role
 	result := DB.Where("name = ?", roleName).First(&role)
 

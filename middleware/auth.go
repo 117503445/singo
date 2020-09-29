@@ -43,7 +43,7 @@ func init() {
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			username := claims[identityKey].(string)
-			u, err := model.QueryByUsername(username)
+			u, err := model.ReadUserByName(username)
 			if err != nil {
 				return nil
 			}
@@ -56,7 +56,7 @@ func init() {
 			}
 			username := userLoginDto.UserName
 			password := userLoginDto.Password
-			queryUser, err := model.QueryByUsername(username)
+			queryUser, err := model.ReadUserByName(username)
 			if err != nil {
 				return nil, jwt.ErrFailedAuthentication
 			}

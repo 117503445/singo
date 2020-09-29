@@ -20,8 +20,8 @@ const (
 	PassWordCost = 12
 )
 
-// GetUser 用ID获取用户
-func GetUser(ID interface{}) (User, error) {
+// ReadUserById 用ID获取用户
+func ReadUserById(ID interface{}) (User, error) {
 	var user User
 	result := DB.First(&user, ID)
 	return user, result.Error
@@ -43,8 +43,8 @@ func (user *User) CheckPassword(password string) bool {
 	return err == nil
 }
 
-// QueryByUsername 用 Username 获取用户
-func QueryByUsername(username string) (User, error) {
+// ReadUserByName 用 Username 获取用户
+func ReadUserByName(username string) (User, error) {
 	var user User
 	result := DB.Where("username = ?", username).First(&user)
 

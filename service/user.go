@@ -22,7 +22,7 @@ func Register(service *dto.UserRegisterIn) (*model.User, error) {
 	}
 
 	roleName := "user"
-	role, err := model.QueryRoleByName(roleName)
+	role, err := model.ReadRoleByName(roleName)
 	if err == gorm.ErrRecordNotFound {
 		role = model.Role{
 			Name: "user",
