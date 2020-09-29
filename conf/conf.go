@@ -33,6 +33,6 @@ func Init() {
 	}
 
 	// 连接数据库
-	model.Database()
+	model.InitDatabase()
 	cache.Redis()
 }

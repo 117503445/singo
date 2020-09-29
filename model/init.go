@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"os"
+	"path"
 	"singo/util"
 	"strings"
 )
@@ -13,8 +15,8 @@ import (
 // DB 数据库链接单例
 var DB *gorm.DB
 
-// Database 在中间件中初始化mysql链接
-func Database() {
+// InitDatabase 在中间件中初始化mysql链接
+func InitDatabase() {
 
 	host := viper.Get("mysql.host")
 	port := viper.Get("mysql.port")
@@ -52,6 +54,35 @@ func Database() {
 	DB = ormDB
 
 	migration()
+	createAdminUser()
+}
+func createAdminUser() {
+	var err error
+	dirPath := path.Dir(util.GetCurrentPath()) + "/data/password"
+
+	if err = os.MkdirAll(dirPath, os.ModePerm); err != nil {
+		util.Log().Panic("can't create dir data/password", err)
+	}
+	password := util.RandStringRunes(12)
+	fileName := dirPath + "/admin.txt"
+	dstFile, _ := os.Create(fileName)
+	defer dstFile.Close()
+	if _, err = dstFile.WriteString(password); err != nil {
+		util.Log().Error("Can't write admin default password", err)
+	}
+
+	user := User{
+		Username: "admin",
+		Roles:    []Role{{Name: "admin"}, {Name: "user"}},
+		Nickname: "admin",
+		Avatar:   "",
+	}
+
+	if err = user.SetPassword(password); err != nil {
+		util.Log().Error("set admin password failed", err)
+	}
+
+	DB.Create(&user)
 }
 
 // Exec 执行单条 SQL

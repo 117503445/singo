@@ -4,13 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/viper"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path"
 	"singo/conf"
 	"singo/model"
 	"singo/server"
 	"singo/service"
+	"singo/util"
 	"strings"
 	"testing"
 
@@ -62,7 +65,7 @@ func TestUserRegister(t *testing.T) {
 	assert.Equal(t, http.StatusOK, code)
 
 	expectResponse := gin.H{
-		"ID":       float64(1),
+		"ID":       float64(2),
 		"username": "user1",
 	}
 
@@ -121,7 +124,7 @@ func TestUserMe(t *testing.T) {
 	assert.Equal(t, http.StatusOK, code)
 
 	expectResponse := gin.H{
-		"ID":       float64(1),
+		"ID":       float64(2),
 		"username": "user1",
 	}
 
@@ -141,10 +144,16 @@ func TestMain(m *testing.M) {
 		panic("删除数据库失败")
 	}
 
-	model.Database() //重新创建空白的数据库
+	model.InitDatabase() //重新创建空白的数据库
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
+}
+func TestCreateAdminPasswordTxt(t *testing.T) {
+	filePath := path.Dir(util.GetCurrentPath()) + "/data/password/admin.txt"
+	bytes, err := ioutil.ReadFile(filePath)
+	assert.Nil(t, err)
+	assert.Equal(t, 12, len(string(bytes)))
 }
 
 func httpPost(t *testing.T, router *gin.Engine, url string, body string) (responseCode int, responseText string) {
