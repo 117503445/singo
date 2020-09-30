@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"os"
+	"io/ioutil"
 	"singo/util"
 	"strings"
 )
@@ -62,24 +62,39 @@ func InitDatabase() {
 func createAdminUser() {
 	var err error
 
-	password := util.RandStringRunes(12)
-	file, _ := os.Create(util.FilePasswordAdmin)
-	defer file.Close()
-	if _, err = file.WriteString(password); err != nil {
-		util.Log().Error("Can't write admin default password", err)
+	var password string
+	bytes, err := ioutil.ReadFile(util.FilePasswordAdmin)
+	if err == nil && len(string(bytes)) != 0 {
+		password = string(bytes)
+
+	} else {
+		password = util.RandStringRunes(12)
+		_ = ioutil.WriteFile(util.FilePasswordAdmin, []byte(password), 0777)
 	}
 
-	user := User{
-		Username: "admin",
-		Roles:    []Role{{Name: "admin"}, {Name: "user"}},
-		Avatar:   "",
+	user, err := ReadUserByName("admin")
+	if err != nil {
+		// 如果没找到 admin 账号,就重新创建
+		user = User{
+			Username: "admin",
+			Roles:    []Role{{Name: "admin"}, {Name: "user"}},
+			Avatar:   "",
+		}
+
+		if err = user.SetPassword(password); err != nil {
+			util.Log().Error("set admin password failed", err)
+		}
+
+		DB.Create(&user)
+	} else {
+		// 如果找到了 admin 账号,就重新设置密码
+		if err = user.SetPassword(password); err != nil {
+			util.Log().Error("set admin password failed", err)
+		}
+
+		DB.Save(&user)
 	}
 
-	if err = user.SetPassword(password); err != nil {
-		util.Log().Error("set admin password failed", err)
-	}
-
-	DB.Create(&user)
 }
 
 // Exec 执行单条 SQL
