@@ -17,6 +17,13 @@ func UserRegister(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, serializer.Err(http.StatusBadRequest, "bad UserRegisterIn dto.", err))
 		return
 	}
+
+	var user *model.User
+	if user, err = userRegisterIn.ToUser(); err != nil {
+		c.JSON(http.StatusInternalServerError, serializer.Err(serializer.StatusDtoToModelError, "userRegisterInToUser failed", err))
+		return
+	}
+
 	count := int64(0)
 	model.DB.Model(&model.User{}).Where("username = ?", userRegisterIn.UserName).Count(&count)
 	if count > 0 {
@@ -24,20 +31,15 @@ func UserRegister(c *gin.Context) {
 		return
 	}
 
-	var user *model.User
-	if user, err = userRegisterIn.ToUser(); err != nil {
-		c.JSON(http.StatusInternalServerError, serializer.Err(http.StatusInternalServerError, "userRegisterInToUser failed", err))
-		return
-	}
 	if user, err = service.Register(user); err != nil {
-		c.JSON(http.StatusBadRequest, serializer.Err(http.StatusBadRequest, "Register failed", err))
+		c.JSON(http.StatusInternalServerError, serializer.Err(serializer.StatusRegisterError, "Register failed", err))
 		return
 	}
 
 	if userOut, err := dto.UserToUserOut(user); err == nil {
 		c.JSON(http.StatusOK, userOut)
 	} else {
-		c.JSON(http.StatusInternalServerError, serializer.Err(http.StatusInternalServerError, "UserToUserOut failed", err))
+		c.JSON(http.StatusInternalServerError, serializer.Err(serializer.StatusModelToDtoError, "UserToUserOut failed", err))
 	}
 }
 

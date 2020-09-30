@@ -9,12 +9,6 @@ type ErrResponse struct {
 	Error   string `json:"error,omitempty"`
 }
 
-// TrackedErrorResponse 有追踪信息的错误响应
-type TrackedErrorResponse struct {
-	ErrResponse
-	TrackID string `json:"track_id"`
-}
-
 // 三位数错误编码为复用http原本含义
 // 五位数错误编码为应用自定义错误
 // 五开头的五位数错误编码为服务器端错误，比如数据库操作失败
@@ -24,10 +18,16 @@ const (
 	StatusDBError = 50001
 	// StatusEncryptError 加密失败
 	StatusEncryptError = 50002
-	// StatusParamErr 各种奇奇怪怪的参数错误
-	StatusParamErr = 40001
+	// StatusRegisterError 插入注册信息失败
+	StatusRegisterError = 50003
+	// StatusModelToDtoError Model 转 Dto 失败
+	StatusModelToDtoError = 50004
+	// StatusParamError 各种奇奇怪怪的参数错误
+	StatusParamError = 40001
 	// StatusUsernameRepeat 用户名重复
 	StatusUsernameRepeat = 40002
+	// StatusDtoToModelError Dto 转 Model 失败
+	StatusDtoToModelError=40003
 )
 
 // Err 通用错误处理
