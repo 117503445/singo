@@ -53,3 +53,32 @@ func UserMe(c *gin.Context) {
 	}
 
 }
+
+// UserUpdate 更新用户信息
+func UserUpdate(c *gin.Context) {
+	userRegisterIn := &dto.UserRegisterIn{}
+	var err error
+	if err = c.ShouldBindJSON(&userRegisterIn); err != nil {
+		c.JSON(http.StatusBadRequest, serializer.Err(http.StatusBadRequest, "bad UserRegisterIn dto.", err))
+		return
+	}
+
+	count := int64(0)
+	model.DB.Model(&model.User{}).Where("username = ?", userRegisterIn.UserName).Count(&count)
+	if count > 0 && service.CurrentUser(c).Username != userRegisterIn.UserName {
+		// 修改 Username 后 发生重名
+		c.JSON(http.StatusBadRequest, serializer.Err(serializer.StatusUsernameRepeat, "Username has already exists.", nil))
+		return
+	}
+
+	user, _ := userRegisterIn.ToUser()
+	user.Model = service.CurrentUser(c).Model
+	model.DB.Save(user)
+
+	if userOut, err := dto.UserToUserOut(user); err == nil {
+		c.JSON(http.StatusOK, userOut)
+	} else {
+		c.JSON(http.StatusInternalServerError, serializer.Err(serializer.StatusModelToDtoError, "UserToUserOut failed", err))
+	}
+
+}

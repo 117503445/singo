@@ -11,6 +11,7 @@ import (
 	"singo/conf"
 	"singo/dto"
 	"singo/model"
+	"singo/serializer"
 	"singo/server"
 	"singo/util"
 	"strings"
@@ -161,6 +162,88 @@ func TestCreateJwtPasswordTxt(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 12, len(string(bytes)))
 }
+func TestUserUpdate(t *testing.T) {
+	router := server.NewRouter()
+
+	userRegisterService := dto.UserRegisterIn{
+		UserName: "user1",
+		Password: "pass1",
+		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
+	}
+
+	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
+
+	userLoginDto := dto.UserLoginIn{
+		UserName: "user1",
+		Password: "pass1",
+	}
+
+	_, response := httpPostJson(t, router, "/api/v1/user/login", userLoginDto)
+	authorization := "Bearer " + response["token"].(string)
+
+	userRegisterService = dto.UserRegisterIn{
+		UserName: "user1",
+		Password: "pass1",
+		Avatar:   "newAva",
+	}
+	code, response := httpPutJson(t, router, "/api/v1/user", map[string]string{"Authorization": authorization},
+		userRegisterService)
+
+	assert.Equal(t, http.StatusOK, code)
+	expectResponse := gin.H{
+		"id":       float64(2),
+		"username": "user1",
+		"avatar":   "newAva",
+	}
+	for k := range expectResponse {
+		assert.Equal(t, expectResponse[k], response[k])
+	}
+
+}
+func TestUserUpdateRepeatUsernameError(t *testing.T) {
+	router := server.NewRouter()
+
+	userRegisterService := dto.UserRegisterIn{
+		UserName: "user1",
+		Password: "pass1",
+		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
+	}
+
+	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
+
+	userRegisterService = dto.UserRegisterIn{
+		UserName: "user2",
+		Password: "pass2",
+		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
+	}
+
+	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
+
+	userLoginDto := dto.UserLoginIn{
+		UserName: "user1",
+		Password: "pass1",
+	}
+
+	_, response := httpPostJson(t, router, "/api/v1/user/login", userLoginDto)
+	authorization := "Bearer " + response["token"].(string)
+
+	userRegisterService = dto.UserRegisterIn{
+		UserName: "user2",
+		Password: "pass1",
+		Avatar:   "newAva",
+	}
+	code, response := httpPutJson(t, router, "/api/v1/user", map[string]string{"Authorization": authorization},
+		userRegisterService)
+
+	assert.Equal(t, http.StatusBadRequest, code)
+	expectResponse := gin.H{
+		"code":    float64(serializer.StatusUsernameRepeat),
+		"message": "Username has already exists.",
+	}
+	for k := range expectResponse {
+		assert.Equal(t, expectResponse[k], response[k])
+	}
+}
 func httpPost(t *testing.T, router *gin.Engine, url string, body string) (responseCode int, responseText string) {
 	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(body))
 	assert.Nil(t, err)
@@ -192,6 +275,27 @@ func httpGet(t *testing.T, router *gin.Engine, url string, headers map[string]st
 }
 func httpGetJson(t *testing.T, router *gin.Engine, url string, headers map[string]string) (responseCode int, responseMap map[string]interface{}) {
 	code, text := httpGet(t, router, url, headers)
+
+	var response map[string]interface{}
+	err := json.Unmarshal([]byte(text), &response)
+	assert.Nil(t, err)
+
+	return code, response
+}
+
+func httpPut(t *testing.T, router *gin.Engine, url string, headers map[string]string, body string) (responseCode int, responseText string) {
+	request, err := http.NewRequest(http.MethodPut, url, strings.NewReader(body))
+	assert.Nil(t, err)
+	for key, value := range headers {
+		request.Header.Add(key, value)
+	}
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+	return recorder.Code, recorder.Body.String()
+}
+func httpPutJson(t *testing.T, router *gin.Engine, url string, headers map[string]string, body interface{}) (responseCode int, responseMap map[string]interface{}) {
+	js, _ := json.Marshal(body)
+	code, text := httpPut(t, router, url, headers, string(js))
 
 	var response map[string]interface{}
 	err := json.Unmarshal([]byte(text), &response)

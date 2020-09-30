@@ -30,6 +30,7 @@ func NewRouter() *gin.Engine {
 		{
 			// User Routing
 			auth.GET("user/me", api.UserMe)
+			auth.PUT("user",api.UserUpdate)
 		}
 	}
 	return r
