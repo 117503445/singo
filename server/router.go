@@ -18,19 +18,20 @@ func NewRouter() *gin.Engine {
 	{
 		v1.POST("ping", api.Ping)
 
+		user := v1.Group("user")
 		// 用户登录
-		v1.POST("user/register", api.UserCreate)
+		user.POST("register", api.UserCreate)
 
 		// 用户登录
-		v1.POST("user/login", middleware.JwtMiddleware.LoginHandler)
+		user.POST("login", middleware.JwtMiddleware.LoginHandler)
 
 		// 需要登录保护的
-		auth := v1.Group("")
+		auth := user.Group("")
 		auth.Use(middleware.JwtMiddleware.MiddlewareFunc())
 		{
 			// User Routing
-			auth.GET("user/me", api.UserRead)
-			auth.PUT("user",api.UserUpdate)
+			auth.GET("me", api.UserRead)
+			auth.PUT("", api.UserUpdate)
 		}
 	}
 	return r
