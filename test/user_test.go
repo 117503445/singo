@@ -44,7 +44,7 @@ func TestUserMeUnauthorized(t *testing.T) {
 }
 func TestPing(t *testing.T) {
 	router := server.NewRouter()
-	_, response := httpPost(t, router, "/api/v1/ping", "")
+	_, response := httpPost(t, router, "/api/v1/ping", nil, "")
 
 	expectResponse := "\"pong\""
 	assert.Equal(t, expectResponse, response)
@@ -58,7 +58,7 @@ func TestUserRegister(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	code, response := httpPostJson(t, router, "/api/v1/user/register", userCreateUpdateIn)
+	code, response := httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
 
 	assert.Equal(t, http.StatusOK, code)
 
@@ -81,14 +81,14 @@ func TestUserLogin(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", userCreateUpdateIn)
+	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
 		Password: "pass1",
 	}
 
-	code, response := httpPostJson(t, router, "/api/v1/user/login", userLoginDto)
+	code, response := httpPostJson(t, router, "/api/v1/user/login", nil, userLoginDto)
 
 	assert.Equal(t, http.StatusOK, code)
 
@@ -110,14 +110,14 @@ func TestUserMe(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", userCreateUpdateIn)
+	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
 		Password: "pass1",
 	}
 
-	_, response := httpPostJson(t, router, "/api/v1/user/login", userLoginDto)
+	_, response := httpPostJson(t, router, "/api/v1/user/login", nil, userLoginDto)
 	authorization := "Bearer " + response["token"].(string)
 
 	code, response := httpGetJson(t, router, "/api/v1/user/me", map[string]string{"Authorization": authorization})
@@ -171,14 +171,14 @@ func TestUserUpdate(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", userCreateUpdateIn)
+	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
 		Password: "pass1",
 	}
 
-	_, response := httpPostJson(t, router, "/api/v1/user/login", userLoginDto)
+	_, response := httpPostJson(t, router, "/api/v1/user/login", nil, userLoginDto)
 	authorization := "Bearer " + response["token"].(string)
 
 	userCreateUpdateIn = dto.UserCreateUpdateIn{
@@ -209,7 +209,7 @@ func TestUserUpdateRepeatUsernameError(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", userCreateUpdateIn)
+	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
 
 	userCreateUpdateIn = dto.UserCreateUpdateIn{
 		UserName: "user2",
@@ -217,14 +217,14 @@ func TestUserUpdateRepeatUsernameError(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", userCreateUpdateIn)
+	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
 		Password: "pass1",
 	}
 
-	_, response := httpPostJson(t, router, "/api/v1/user/login", userLoginDto)
+	_, response := httpPostJson(t, router, "/api/v1/user/login", nil, userLoginDto)
 	authorization := "Bearer " + response["token"].(string)
 
 	userCreateUpdateIn = dto.UserCreateUpdateIn{
@@ -244,17 +244,20 @@ func TestUserUpdateRepeatUsernameError(t *testing.T) {
 		assert.Equal(t, expectResponse[k], response[k])
 	}
 }
-func httpPost(t *testing.T, router *gin.Engine, url string, body string) (responseCode int, responseText string) {
-	request, err := http.NewRequest(http.MethodPost, url, strings.NewReader(body))
-	assert.Nil(t, err)
 
+func httpRequest(t *testing.T, httpMethod string, router *gin.Engine, url string, headers map[string]string, body string) (responseCode int, responseText string) {
+	request, err := http.NewRequest(httpMethod, url, strings.NewReader(body))
+	assert.Nil(t, err)
+	for key, value := range headers {
+		request.Header.Add(key, value)
+	}
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, request)
 	return recorder.Code, recorder.Body.String()
 }
-func httpPostJson(t *testing.T, router *gin.Engine, url string, body interface{}) (responseCode int, responseMap map[string]interface{}) {
+func httpRequestJson(t *testing.T, httpMethod string, router *gin.Engine, url string, headers map[string]string, body interface{}) (responseCode int, responseMap map[string]interface{}) {
 	js, _ := json.Marshal(body)
-	code, text := httpPost(t, router, url, string(js))
+	code, text := httpRequest(t, httpMethod, router, url, headers, string(js))
 
 	var response map[string]interface{}
 	err := json.Unmarshal([]byte(text), &response)
@@ -264,42 +267,29 @@ func httpPostJson(t *testing.T, router *gin.Engine, url string, body interface{}
 }
 
 func httpGet(t *testing.T, router *gin.Engine, url string, headers map[string]string) (responseCode int, responseText string) {
-	request, err := http.NewRequest(http.MethodGet, url, nil)
-	assert.Nil(t, err)
-	for key, value := range headers {
-		request.Header.Add(key, value)
-	}
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, request)
-	return recorder.Code, recorder.Body.String()
+	return httpRequest(t, http.MethodGet, router, url, headers, "")
 }
 func httpGetJson(t *testing.T, router *gin.Engine, url string, headers map[string]string) (responseCode int, responseMap map[string]interface{}) {
-	code, text := httpGet(t, router, url, headers)
+	return httpRequestJson(t, http.MethodGet, router, url, headers, "")
+}
 
-	var response map[string]interface{}
-	err := json.Unmarshal([]byte(text), &response)
-	assert.Nil(t, err)
-
-	return code, response
+func httpPost(t *testing.T, router *gin.Engine, url string, headers map[string]string, body string) (responseCode int, responseText string) {
+	return httpRequest(t, http.MethodPost, router, url, headers, body)
+}
+func httpPostJson(t *testing.T, router *gin.Engine, url string, headers map[string]string, body interface{}) (responseCode int, responseMap map[string]interface{}) {
+	return httpRequestJson(t, http.MethodPost, router, url, headers, body)
 }
 
 func httpPut(t *testing.T, router *gin.Engine, url string, headers map[string]string, body string) (responseCode int, responseText string) {
-	request, err := http.NewRequest(http.MethodPut, url, strings.NewReader(body))
-	assert.Nil(t, err)
-	for key, value := range headers {
-		request.Header.Add(key, value)
-	}
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, request)
-	return recorder.Code, recorder.Body.String()
+	return httpRequest(t, http.MethodPut, router, url, headers, body)
 }
 func httpPutJson(t *testing.T, router *gin.Engine, url string, headers map[string]string, body interface{}) (responseCode int, responseMap map[string]interface{}) {
-	js, _ := json.Marshal(body)
-	code, text := httpPut(t, router, url, headers, string(js))
+	return httpRequestJson(t, http.MethodPut, router, url, headers, body)
+}
 
-	var response map[string]interface{}
-	err := json.Unmarshal([]byte(text), &response)
-	assert.Nil(t, err)
-
-	return code, response
+func httpDelete(t *testing.T, router *gin.Engine, url string, headers map[string]string, body string) (responseCode int, responseText string) {
+	return httpRequest(t, http.MethodDelete, router, url, headers, body)
+}
+func httpDeleteJson(t *testing.T, router *gin.Engine, url string, headers map[string]string, body interface{}) (responseCode int, responseMap map[string]interface{}) {
+	return httpRequestJson(t, http.MethodDelete, router, url, headers, body)
 }
