@@ -12,7 +12,7 @@ import (
 	"singo/dto"
 	"singo/model"
 	"singo/serializer"
-	"singo/server"
+	"singo/router"
 	"singo/util"
 	"strings"
 	"testing"
@@ -22,7 +22,7 @@ import (
 )
 
 func TestUserMeUnauthorized(t *testing.T) {
-	router := server.NewRouter()
+	router := router.NewRouter()
 
 	request, err := http.NewRequest(http.MethodGet, "/api/v1/user/me", nil)
 	assert.Nil(t, err)
@@ -43,14 +43,14 @@ func TestUserMeUnauthorized(t *testing.T) {
 	assert.Equal(t, expectResponse, response)
 }
 func TestPing(t *testing.T) {
-	router := server.NewRouter()
+	router := router.NewRouter()
 	_, response := httpPost(t, router, "/api/v1/ping", nil, "")
 
 	expectResponse := "\"pong\""
 	assert.Equal(t, expectResponse, response)
 }
 func TestUserRegister(t *testing.T) {
-	router := server.NewRouter()
+	router := router.NewRouter()
 
 	userCreateUpdateIn := dto.UserCreateUpdateIn{
 		UserName: "user1",
@@ -73,7 +73,7 @@ func TestUserRegister(t *testing.T) {
 
 }
 func TestUserRegisterParamNotValidError(t *testing.T) {
-	router := server.NewRouter()
+	router := router.NewRouter()
 
 	userCreateUpdateIn := dto.UserCreateUpdateIn{
 		UserName: "u",
@@ -96,7 +96,7 @@ func TestUserRegisterParamNotValidError(t *testing.T) {
 
 }
 func TestUserLogin(t *testing.T) {
-	router := server.NewRouter()
+	router := router.NewRouter()
 
 	userCreateUpdateIn := dto.UserCreateUpdateIn{
 		UserName: "user1",
@@ -125,7 +125,7 @@ func TestUserLogin(t *testing.T) {
 
 }
 func TestUserMe(t *testing.T) {
-	router := server.NewRouter()
+	router := router.NewRouter()
 
 	userCreateUpdateIn := dto.UserCreateUpdateIn{
 		UserName: "user1",
@@ -188,7 +188,7 @@ func TestCreateJwtPasswordTxt(t *testing.T) {
 	assert.Equal(t, 12, len(string(bytes)))
 }
 func TestUserUpdate(t *testing.T) {
-	router := server.NewRouter()
+	router := router.NewRouter()
 
 	userCreateUpdateIn := dto.UserCreateUpdateIn{
 		UserName: "user1",
@@ -226,7 +226,7 @@ func TestUserUpdate(t *testing.T) {
 
 }
 func TestUserUpdateRepeatUsernameError(t *testing.T) {
-	router := server.NewRouter()
+	router := router.NewRouter()
 
 	userCreateUpdateIn := dto.UserCreateUpdateIn{
 		UserName: "user1",
@@ -270,7 +270,7 @@ func TestUserUpdateRepeatUsernameError(t *testing.T) {
 	}
 }
 func TestUserUpdateParamNotValidError(t *testing.T) {
-	router := server.NewRouter()
+	router := router.NewRouter()
 
 	userCreateUpdateIn := dto.UserCreateUpdateIn{
 		UserName: "user1",
@@ -314,7 +314,7 @@ func TestUserUpdateParamNotValidError(t *testing.T) {
 	}
 }
 func TestAdminUserRead(t *testing.T) {
-	router := server.NewRouter()
+	router := router.NewRouter()
 
 	filePath := util.FilePasswordAdmin
 	bytes, err := ioutil.ReadFile(filePath)
@@ -343,7 +343,7 @@ func TestAdminUserRead(t *testing.T) {
 }
 func TestAdminUserReadNotFoundError(t *testing.T) {
 	initCleanDatabase()
-	router := server.NewRouter()
+	router := router.NewRouter()
 
 	filePath := util.FilePasswordAdmin
 	bytes, err := ioutil.ReadFile(filePath)
@@ -371,7 +371,7 @@ func TestAdminUserReadNotFoundError(t *testing.T) {
 	}
 }
 func TestAdminUserReadNoRoleError(t *testing.T) {
-	router := server.NewRouter()
+	router := router.NewRouter()
 
 	filePath := util.FilePasswordAdmin
 	bytes, err := ioutil.ReadFile(filePath)
