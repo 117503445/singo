@@ -72,6 +72,29 @@ func TestUserRegister(t *testing.T) {
 	}
 
 }
+func TestUserRegisterParamNotValidError(t *testing.T) {
+	router := server.NewRouter()
+
+	userCreateUpdateIn := dto.UserCreateUpdateIn{
+		UserName: "u",
+		Password: "pass1",
+		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
+	}
+
+	code, response := httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
+
+	assert.Equal(t, http.StatusBadRequest, code)
+
+	expectResponse := gin.H{
+		"code":    float64(serializer.StatusParamNotValid),
+		"message": "StatusParamNotValid",
+	}
+
+	for k := range expectResponse {
+		assert.Equal(t, expectResponse[k], response[k])
+	}
+
+}
 func TestUserLogin(t *testing.T) {
 	router := server.NewRouter()
 
@@ -244,7 +267,50 @@ func TestUserUpdateRepeatUsernameError(t *testing.T) {
 		assert.Equal(t, expectResponse[k], response[k])
 	}
 }
+func TestUserUpdateParamNotValidError(t *testing.T) {
+	router := server.NewRouter()
 
+	userCreateUpdateIn := dto.UserCreateUpdateIn{
+		UserName: "user1",
+		Password: "pass1",
+		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
+	}
+
+	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
+
+	userCreateUpdateIn = dto.UserCreateUpdateIn{
+		UserName: "user2",
+		Password: "pass2",
+		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
+	}
+
+	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
+
+	userLoginDto := dto.UserLoginIn{
+		UserName: "user1",
+		Password: "pass1",
+	}
+
+	_, response := httpPostJson(t, router, "/api/v1/user/login", nil, userLoginDto)
+	authorization := "Bearer " + response["token"].(string)
+
+	userCreateUpdateIn = dto.UserCreateUpdateIn{
+		UserName: "u",
+		Password: "pass1",
+		Avatar:   "newAva",
+	}
+	code, response := httpPutJson(t, router, "/api/v1/user", map[string]string{"Authorization": authorization},
+		userCreateUpdateIn)
+
+	assert.Equal(t, http.StatusBadRequest, code)
+	expectResponse := gin.H{
+		"code":    float64(serializer.StatusParamNotValid),
+		"message": "StatusParamNotValid",
+	}
+	for k := range expectResponse {
+		assert.Equal(t, expectResponse[k], response[k])
+	}
+}
 func httpRequest(t *testing.T, httpMethod string, router *gin.Engine, url string, headers map[string]string, body string) (responseCode int, responseText string) {
 	request, err := http.NewRequest(httpMethod, url, strings.NewReader(body))
 	assert.Nil(t, err)

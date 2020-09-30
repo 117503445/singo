@@ -27,7 +27,9 @@ const (
 	// StatusUsernameRepeat 用户名重复
 	StatusUsernameRepeat = 40002
 	// StatusDtoToModelError Dto 转 Model 失败
-	StatusDtoToModelError=40003
+	StatusDtoToModelError = 40003
+	// StatusParamNotValid 参数不合法
+	StatusParamNotValid = 40004
 )
 
 // Err 通用错误处理

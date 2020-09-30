@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"singo/dto"
 	"singo/model"
@@ -15,6 +16,11 @@ func UserCreate(c *gin.Context) {
 	var err error
 	if err = c.ShouldBindJSON(&userRegisterIn); err != nil {
 		c.JSON(http.StatusBadRequest, serializer.Err(http.StatusBadRequest, "bad UserCreateUpdateIn dto.", err))
+		return
+	}
+
+	if err = validator.New().Struct(userRegisterIn); err != nil {
+		c.JSON(http.StatusBadRequest, serializer.Err(serializer.StatusParamNotValid, "StatusParamNotValid", err))
 		return
 	}
 
@@ -60,6 +66,11 @@ func UserUpdate(c *gin.Context) {
 	var err error
 	if err = c.ShouldBindJSON(&userRegisterIn); err != nil {
 		c.JSON(http.StatusBadRequest, serializer.Err(http.StatusBadRequest, "bad UserCreateUpdateIn dto.", err))
+		return
+	}
+
+	if err = validator.New().Struct(userRegisterIn); err != nil {
+		c.JSON(http.StatusBadRequest, serializer.Err(serializer.StatusParamNotValid, "StatusParamNotValid", err))
 		return
 	}
 

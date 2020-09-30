@@ -7,6 +7,7 @@ require (
 	github.com/devfeel/mapper v0.7.4
 	github.com/gin-contrib/cors v1.3.0
 	github.com/gin-gonic/gin v1.6.3
+	github.com/go-playground/validator/v10 v10.2.0
 	github.com/go-redis/redis v6.15.3+incompatible
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.5.1
