@@ -20,8 +20,8 @@ func NewRouter() *gin.Engine {
 
 		user := v1.Group("user")
 		{
-			// 用户登录
-			user.POST("register", api.UserCreate)
+			// 用户注册
+			user.POST("", api.UserCreate)
 
 			// 用户登录
 			user.POST("login", middleware.JwtMiddleware.LoginHandler)

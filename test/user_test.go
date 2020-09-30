@@ -58,7 +58,7 @@ func TestUserRegister(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	code, response := httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
+	code, response := httpPostJson(t, router, "/api/v1/user", nil, userCreateUpdateIn)
 
 	assert.Equal(t, http.StatusOK, code)
 
@@ -81,7 +81,7 @@ func TestUserRegisterParamNotValidError(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	code, response := httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
+	code, response := httpPostJson(t, router, "/api/v1/user", nil, userCreateUpdateIn)
 
 	assert.Equal(t, http.StatusBadRequest, code)
 
@@ -104,7 +104,7 @@ func TestUserLogin(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
+	httpPostJson(t, router, "/api/v1/user", nil, userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
@@ -133,7 +133,7 @@ func TestUserMe(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
+	httpPostJson(t, router, "/api/v1/user", nil, userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
@@ -196,7 +196,7 @@ func TestUserUpdate(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
+	httpPostJson(t, router, "/api/v1/user", nil, userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
@@ -234,7 +234,7 @@ func TestUserUpdateRepeatUsernameError(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
+	httpPostJson(t, router, "/api/v1/user", nil, userCreateUpdateIn)
 
 	userCreateUpdateIn = dto.UserCreateUpdateIn{
 		UserName: "user2",
@@ -242,7 +242,7 @@ func TestUserUpdateRepeatUsernameError(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
+	httpPostJson(t, router, "/api/v1/user", nil, userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
@@ -278,7 +278,7 @@ func TestUserUpdateParamNotValidError(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
+	httpPostJson(t, router, "/api/v1/user", nil, userCreateUpdateIn)
 
 	userCreateUpdateIn = dto.UserCreateUpdateIn{
 		UserName: "user2",
@@ -286,7 +286,7 @@ func TestUserUpdateParamNotValidError(t *testing.T) {
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", nil, userCreateUpdateIn)
+	httpPostJson(t, router, "/api/v1/user", nil, userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
