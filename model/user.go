@@ -21,10 +21,10 @@ const (
 )
 
 // ReadUserById 用ID获取用户
-func ReadUserById(ID interface{}) (User, error) {
+func ReadUserById(id int) (*User, error) {
 	var user User
-	result := DB.First(&user, ID)
-	return user, result.Error
+	result := DB.First(&user, id)
+	return &user, result.Error
 }
 
 // SetPassword 设置密码

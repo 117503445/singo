@@ -157,18 +157,20 @@ func TestUserMe(t *testing.T) {
 	}
 
 }
+func initCleanDatabase() {
+	dbName := viper.GetString("mysql.dbname")
+	if _, err := model.Exec(fmt.Sprintf("drop database %v", dbName)); err != nil {
+		panic("删除数据库失败")
+	}
+
+	model.InitDatabase() //重新创建空白的数据库
+}
 func TestMain(m *testing.M) {
 	conf.Init()
 	dbName := viper.GetString("mysql.dbname")
 	if !strings.Contains(dbName, "test") {
 		panic("本测试会清空数据库,禁止在 数据库名 不包含 test 的 数据库上运行")
 	}
-
-	if _, err := model.Exec(fmt.Sprintf("drop database %v", dbName)); err != nil {
-		panic("删除数据库失败")
-	}
-
-	model.InitDatabase() //重新创建空白的数据库
 
 	exitCode := m.Run()
 	os.Exit(exitCode)
@@ -307,6 +309,84 @@ func TestUserUpdateParamNotValidError(t *testing.T) {
 		"code":    float64(serializer.StatusParamNotValid),
 		"message": "StatusParamNotValid",
 	}
+	for k := range expectResponse {
+		assert.Equal(t, expectResponse[k], response[k])
+	}
+}
+func TestAdminUserRead(t *testing.T) {
+	router := server.NewRouter()
+
+	filePath := util.FilePasswordAdmin
+	bytes, err := ioutil.ReadFile(filePath)
+	assert.Nil(t, err)
+	password := string(bytes)
+	assert.Equal(t, 12, len(password))
+
+	userLoginDto := dto.UserLoginIn{
+		UserName: "admin",
+		Password: password,
+	}
+	_, response := httpPostJson(t, router, "/api/v1/user/login", nil, userLoginDto)
+	authorization := "Bearer " + response["token"].(string)
+	code, response := httpGetJson(t, router, "/api/v1/admin/user/1", map[string]string{"Authorization": authorization})
+	assert.Equal(t, http.StatusOK, code)
+
+	expectResponse := gin.H{
+		"id":       float64(1),
+		"username": "admin",
+		"avatar":   "",
+	}
+
+	for k := range expectResponse {
+		assert.Equal(t, expectResponse[k], response[k])
+	}
+}
+func TestAdminUserReadNotFoundError(t *testing.T) {
+	initCleanDatabase()
+	router := server.NewRouter()
+
+	filePath := util.FilePasswordAdmin
+	bytes, err := ioutil.ReadFile(filePath)
+	assert.Nil(t, err)
+	password := string(bytes)
+	assert.Equal(t, 12, len(password))
+
+	userLoginDto := dto.UserLoginIn{
+		UserName: "admin",
+		Password: password,
+	}
+	_, response := httpPostJson(t, router, "/api/v1/user/login", nil, userLoginDto)
+	authorization := "Bearer " + response["token"].(string)
+	code, response := httpGetJson(t, router, "/api/v1/admin/user/2", map[string]string{"Authorization": authorization})
+	assert.Equal(t, http.StatusNotFound, code)
+
+	expectResponse := gin.H{
+		"code":    float64(404),
+		"message": "user not found",
+		"error":   "record not found",
+	}
+
+	for k := range expectResponse {
+		assert.Equal(t, expectResponse[k], response[k])
+	}
+}
+func TestAdminUserReadNoRoleError(t *testing.T) {
+	router := server.NewRouter()
+
+	filePath := util.FilePasswordAdmin
+	bytes, err := ioutil.ReadFile(filePath)
+	assert.Nil(t, err)
+	password := string(bytes)
+	assert.Equal(t, 12, len(password))
+
+	code, response := httpGetJson(t, router, "/api/v1/admin/user/1", nil)
+	assert.Equal(t, http.StatusUnauthorized, code)
+
+	expectResponse := gin.H{
+		"code":    float64(401),
+		"message": "cookie token is empty",
+	}
+
 	for k := range expectResponse {
 		assert.Equal(t, expectResponse[k], response[k])
 	}

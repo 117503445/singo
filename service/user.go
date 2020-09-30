@@ -3,7 +3,6 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"singo/middleware"
 	"singo/model"
 )
 
@@ -28,7 +27,7 @@ func Register(user *model.User) (*model.User, error) {
 
 // CurrentUser 获取当前用户
 func CurrentUser(c *gin.Context) *model.User {
-	if user, _ := c.Get(middleware.IdentityKey); user != nil {
+	if user, _ := c.Get("user"); user != nil {
 		if u, ok := user.(*model.User); ok {
 			return u
 		}
