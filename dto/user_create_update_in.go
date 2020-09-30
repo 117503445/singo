@@ -5,13 +5,13 @@ import (
 	"singo/model"
 )
 
-type UserRegisterIn struct {
+type UserCreateUpdateIn struct {
 	UserName string `form:"username" json:"username" binding:"required,min=5,max=30"`
 	Password string `form:"password" json:"password" binding:"required,min=4,max=40"`
 	Avatar   string `json:"avatar" gorm:"size:1000"`
 }
 
-func (userRegisterIn UserRegisterIn) ToUser() (*model.User, error) {
+func (userRegisterIn UserCreateUpdateIn) ToUser() (*model.User, error) {
 	user := &model.User{}
 	if err := mapper.AutoMapper(&userRegisterIn, user); err != nil {
 		return user, err

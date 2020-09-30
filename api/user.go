@@ -9,12 +9,12 @@ import (
 	"singo/service"
 )
 
-// UserRegister 用户注册接口
-func UserRegister(c *gin.Context) {
-	userRegisterIn := &dto.UserRegisterIn{}
+// UserCreate 用户注册接口
+func UserCreate(c *gin.Context) {
+	userRegisterIn := &dto.UserCreateUpdateIn{}
 	var err error
 	if err = c.ShouldBindJSON(&userRegisterIn); err != nil {
-		c.JSON(http.StatusBadRequest, serializer.Err(http.StatusBadRequest, "bad UserRegisterIn dto.", err))
+		c.JSON(http.StatusBadRequest, serializer.Err(http.StatusBadRequest, "bad UserCreateUpdateIn dto.", err))
 		return
 	}
 
@@ -43,8 +43,8 @@ func UserRegister(c *gin.Context) {
 	}
 }
 
-// UserMe 用户详情
-func UserMe(c *gin.Context) {
+// UserRead 用户详情
+func UserRead(c *gin.Context) {
 	user := service.CurrentUser(c)
 	if userOut, err := dto.UserToUserOut(user); err == nil {
 		c.JSON(http.StatusOK, userOut)
@@ -56,10 +56,10 @@ func UserMe(c *gin.Context) {
 
 // UserUpdate 更新用户信息
 func UserUpdate(c *gin.Context) {
-	userRegisterIn := &dto.UserRegisterIn{}
+	userRegisterIn := &dto.UserCreateUpdateIn{}
 	var err error
 	if err = c.ShouldBindJSON(&userRegisterIn); err != nil {
-		c.JSON(http.StatusBadRequest, serializer.Err(http.StatusBadRequest, "bad UserRegisterIn dto.", err))
+		c.JSON(http.StatusBadRequest, serializer.Err(http.StatusBadRequest, "bad UserCreateUpdateIn dto.", err))
 		return
 	}
 

@@ -19,7 +19,7 @@ func NewRouter() *gin.Engine {
 		v1.POST("ping", api.Ping)
 
 		// 用户登录
-		v1.POST("user/register", api.UserRegister)
+		v1.POST("user/register", api.UserCreate)
 
 		// 用户登录
 		v1.POST("user/login", middleware.JwtMiddleware.LoginHandler)
@@ -29,7 +29,7 @@ func NewRouter() *gin.Engine {
 		auth.Use(middleware.JwtMiddleware.MiddlewareFunc())
 		{
 			// User Routing
-			auth.GET("user/me", api.UserMe)
+			auth.GET("user/me", api.UserRead)
 			auth.PUT("user",api.UserUpdate)
 		}
 	}

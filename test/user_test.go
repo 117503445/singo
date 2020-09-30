@@ -52,13 +52,13 @@ func TestPing(t *testing.T) {
 func TestUserRegister(t *testing.T) {
 	router := server.NewRouter()
 
-	userRegisterService := dto.UserRegisterIn{
+	userCreateUpdateIn := dto.UserCreateUpdateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	code, response := httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
+	code, response := httpPostJson(t, router, "/api/v1/user/register", userCreateUpdateIn)
 
 	assert.Equal(t, http.StatusOK, code)
 
@@ -75,13 +75,13 @@ func TestUserRegister(t *testing.T) {
 func TestUserLogin(t *testing.T) {
 	router := server.NewRouter()
 
-	userRegisterService := dto.UserRegisterIn{
+	userCreateUpdateIn := dto.UserCreateUpdateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
+	httpPostJson(t, router, "/api/v1/user/register", userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
@@ -104,13 +104,13 @@ func TestUserLogin(t *testing.T) {
 func TestUserMe(t *testing.T) {
 	router := server.NewRouter()
 
-	userRegisterService := dto.UserRegisterIn{
+	userCreateUpdateIn := dto.UserCreateUpdateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
+	httpPostJson(t, router, "/api/v1/user/register", userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
@@ -165,13 +165,13 @@ func TestCreateJwtPasswordTxt(t *testing.T) {
 func TestUserUpdate(t *testing.T) {
 	router := server.NewRouter()
 
-	userRegisterService := dto.UserRegisterIn{
+	userCreateUpdateIn := dto.UserCreateUpdateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
+	httpPostJson(t, router, "/api/v1/user/register", userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
@@ -181,13 +181,13 @@ func TestUserUpdate(t *testing.T) {
 	_, response := httpPostJson(t, router, "/api/v1/user/login", userLoginDto)
 	authorization := "Bearer " + response["token"].(string)
 
-	userRegisterService = dto.UserRegisterIn{
+	userCreateUpdateIn = dto.UserCreateUpdateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "newAva",
 	}
 	code, response := httpPutJson(t, router, "/api/v1/user", map[string]string{"Authorization": authorization},
-		userRegisterService)
+		userCreateUpdateIn)
 
 	assert.Equal(t, http.StatusOK, code)
 	expectResponse := gin.H{
@@ -203,21 +203,21 @@ func TestUserUpdate(t *testing.T) {
 func TestUserUpdateRepeatUsernameError(t *testing.T) {
 	router := server.NewRouter()
 
-	userRegisterService := dto.UserRegisterIn{
+	userCreateUpdateIn := dto.UserCreateUpdateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
+	httpPostJson(t, router, "/api/v1/user/register", userCreateUpdateIn)
 
-	userRegisterService = dto.UserRegisterIn{
+	userCreateUpdateIn = dto.UserCreateUpdateIn{
 		UserName: "user2",
 		Password: "pass2",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
 	}
 
-	httpPostJson(t, router, "/api/v1/user/register", userRegisterService)
+	httpPostJson(t, router, "/api/v1/user/register", userCreateUpdateIn)
 
 	userLoginDto := dto.UserLoginIn{
 		UserName: "user1",
@@ -227,13 +227,13 @@ func TestUserUpdateRepeatUsernameError(t *testing.T) {
 	_, response := httpPostJson(t, router, "/api/v1/user/login", userLoginDto)
 	authorization := "Bearer " + response["token"].(string)
 
-	userRegisterService = dto.UserRegisterIn{
+	userCreateUpdateIn = dto.UserCreateUpdateIn{
 		UserName: "user2",
 		Password: "pass1",
 		Avatar:   "newAva",
 	}
 	code, response := httpPutJson(t, router, "/api/v1/user", map[string]string{"Authorization": authorization},
-		userRegisterService)
+		userCreateUpdateIn)
 
 	assert.Equal(t, http.StatusBadRequest, code)
 	expectResponse := gin.H{
