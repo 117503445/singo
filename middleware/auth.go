@@ -11,9 +11,9 @@ import (
 )
 
 var JwtMiddleware *jwt.GinJWTMiddleware
-
+var IdentityKey string
 func init() {
-	identityKey := "user"
+	IdentityKey = "user"
 	var err error
 
 	var jwtPassword string
@@ -30,11 +30,11 @@ func init() {
 		Key:         []byte(jwtPassword),
 		Timeout:     time.Hour,
 		MaxRefresh:  time.Hour,
-		IdentityKey: identityKey,
+		IdentityKey: IdentityKey,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*model.User); ok {
 				m := jwt.MapClaims{
-					identityKey: v.Username,
+					IdentityKey: v.Username,
 				}
 				return m
 			}
@@ -42,7 +42,7 @@ func init() {
 		},
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
-			username := claims[identityKey].(string)
+			username := claims[IdentityKey].(string)
 			u, err := model.ReadUserByName(username)
 			if err != nil {
 				return nil

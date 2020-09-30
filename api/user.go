@@ -49,7 +49,7 @@ func UserMe(c *gin.Context) {
 	if userOut, err := dto.UserToUserOut(user); err == nil {
 		c.JSON(http.StatusOK, userOut)
 	} else {
-		c.JSON(http.StatusInternalServerError, serializer.Err(http.StatusInternalServerError, "UserToUserOut failed", err))
+		c.JSON(http.StatusInternalServerError, serializer.Err(serializer.StatusModelToDtoError, "UserToUserOut failed", err))
 	}
 
 }
