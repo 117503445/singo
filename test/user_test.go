@@ -24,25 +24,24 @@ import (
 
 var r *gin.Engine
 
-func TestUserMeUnauthorized(t *testing.T) {
+func initCleanDatabase() {
+	dbName := viper.GetString("mysql.dbname")
+	if _, err := model.Exec(fmt.Sprintf("drop database %v", dbName)); err != nil {
+		panic("删除数据库失败")
+	}
 
-	request, err := http.NewRequest(http.MethodGet, "/api/v1/user/me", nil)
-	assert.Nil(t, err)
+	model.InitDatabase() //重新创建空白的数据库
+}
 
-	recorder := httptest.NewRecorder()
-	r.ServeHTTP(recorder, request)
-
-	assert.Equal(t, http.StatusUnauthorized, recorder.Code)
-
-	var response map[string]interface{}
-	err = json.Unmarshal([]byte(recorder.Body.String()), &response)
-	assert.Nil(t, err)
-
-	expectResponse := map[string]interface{}(gin.H{
-		"code":    float64(401),
-		"message": "cookie token is empty",
-	})
-	assert.Equal(t, expectResponse, response)
+func TestMain(m *testing.M) {
+	conf.Init()
+	dbName := viper.GetString("mysql.dbname")
+	if !strings.Contains(dbName, "test") {
+		panic("本测试会清空数据库,禁止在 数据库名 不包含 test 的 数据库上运行")
+	}
+	r = router.NewRouter()
+	exitCode := m.Run()
+	os.Exit(exitCode)
 }
 func TestPing(t *testing.T) {
 
@@ -51,9 +50,10 @@ func TestPing(t *testing.T) {
 	expectResponse := "\"pong\""
 	assert.Equal(t, expectResponse, response)
 }
+
 func TestUserRegister(t *testing.T) {
 
-	userCreateUpdateIn := dto.UserCreateUpdateIn{
+	userCreateUpdateIn := dto.UserCreateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
@@ -75,7 +75,7 @@ func TestUserRegister(t *testing.T) {
 }
 func TestUserRegisterParamNotValidError(t *testing.T) {
 
-	userCreateUpdateIn := dto.UserCreateUpdateIn{
+	userCreateUpdateIn := dto.UserCreateIn{
 		UserName: "u",
 		Password: "pass1",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
@@ -95,9 +95,10 @@ func TestUserRegisterParamNotValidError(t *testing.T) {
 	}
 
 }
+
 func TestUserLogin(t *testing.T) {
 
-	userCreateUpdateIn := dto.UserCreateUpdateIn{
+	userCreateUpdateIn := dto.UserCreateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
@@ -123,9 +124,10 @@ func TestUserLogin(t *testing.T) {
 	}
 
 }
+
 func TestUserMe(t *testing.T) {
 
-	userCreateUpdateIn := dto.UserCreateUpdateIn{
+	userCreateUpdateIn := dto.UserCreateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
@@ -155,24 +157,27 @@ func TestUserMe(t *testing.T) {
 	}
 
 }
-func initCleanDatabase() {
-	dbName := viper.GetString("mysql.dbname")
-	if _, err := model.Exec(fmt.Sprintf("drop database %v", dbName)); err != nil {
-		panic("删除数据库失败")
-	}
+func TestUserMeUnauthorized(t *testing.T) {
 
-	model.InitDatabase() //重新创建空白的数据库
+	request, err := http.NewRequest(http.MethodGet, "/api/v1/user/me", nil)
+	assert.Nil(t, err)
+
+	recorder := httptest.NewRecorder()
+	r.ServeHTTP(recorder, request)
+
+	assert.Equal(t, http.StatusUnauthorized, recorder.Code)
+
+	var response map[string]interface{}
+	err = json.Unmarshal([]byte(recorder.Body.String()), &response)
+	assert.Nil(t, err)
+
+	expectResponse := map[string]interface{}(gin.H{
+		"code":    float64(401),
+		"message": "cookie token is empty",
+	})
+	assert.Equal(t, expectResponse, response)
 }
-func TestMain(m *testing.M) {
-	conf.Init()
-	dbName := viper.GetString("mysql.dbname")
-	if !strings.Contains(dbName, "test") {
-		panic("本测试会清空数据库,禁止在 数据库名 不包含 test 的 数据库上运行")
-	}
-	r = router.NewRouter()
-	exitCode := m.Run()
-	os.Exit(exitCode)
-}
+
 func TestCreateAdminPasswordTxt(t *testing.T) {
 	filePath := util.FilePasswordAdmin
 	bytes, err := ioutil.ReadFile(filePath)
@@ -185,9 +190,10 @@ func TestCreateJwtPasswordTxt(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 12, len(string(bytes)))
 }
+
 func TestUserUpdate(t *testing.T) {
 
-	userCreateUpdateIn := dto.UserCreateUpdateIn{
+	userCreateUpdateIn := dto.UserCreateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
@@ -203,7 +209,7 @@ func TestUserUpdate(t *testing.T) {
 	_, response := httpPostJson(t, r, "/api/v1/user/login", nil, userLoginDto)
 	authorization := "Bearer " + response["token"].(string)
 
-	userCreateUpdateIn = dto.UserCreateUpdateIn{
+	userCreateUpdateIn = dto.UserCreateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "newAva",
@@ -222,9 +228,9 @@ func TestUserUpdate(t *testing.T) {
 	}
 
 }
-func TestUserUpdateRepeatUsernameError(t *testing.T) {
-
-	userCreateUpdateIn := dto.UserCreateUpdateIn{
+func TestUserUpdateOptionalPassword(t *testing.T) {
+	initCleanDatabase()
+	userCreateUpdateIn := dto.UserCreateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
@@ -232,7 +238,43 @@ func TestUserUpdateRepeatUsernameError(t *testing.T) {
 
 	httpPostJson(t, r, "/api/v1/user", nil, userCreateUpdateIn)
 
-	userCreateUpdateIn = dto.UserCreateUpdateIn{
+	userLoginDto := dto.UserLoginIn{
+		UserName: "user1",
+		Password: "pass1",
+	}
+
+	_, response := httpPostJson(t, r, "/api/v1/user/login", nil, userLoginDto)
+	authorization := "Bearer " + response["token"].(string)
+
+	_, response = httpPutJson(t, r, "/api/v1/user", map[string]string{"Authorization": authorization},
+		gin.H{"password": "pass2"})
+
+	userLoginDto = dto.UserLoginIn{
+		UserName: "user1",
+		Password: "pass2",
+	}
+
+	_, response = httpPostJson(t, r, "/api/v1/user/login", nil, userLoginDto)
+
+	expectResponse := gin.H{
+		"code": float64(200),
+	}
+	for k := range expectResponse {
+		assert.Equal(t, expectResponse[k], response[k])
+	}
+
+}
+func TestUserUpdateRepeatUsernameError(t *testing.T) {
+	initCleanDatabase()
+	userCreateUpdateIn := dto.UserCreateIn{
+		UserName: "user1",
+		Password: "pass1",
+		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
+	}
+
+	httpPostJson(t, r, "/api/v1/user", nil, userCreateUpdateIn)
+
+	userCreateUpdateIn = dto.UserCreateIn{
 		UserName: "user2",
 		Password: "pass2",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
@@ -248,7 +290,7 @@ func TestUserUpdateRepeatUsernameError(t *testing.T) {
 	_, response := httpPostJson(t, r, "/api/v1/user/login", nil, userLoginDto)
 	authorization := "Bearer " + response["token"].(string)
 
-	userCreateUpdateIn = dto.UserCreateUpdateIn{
+	userCreateUpdateIn = dto.UserCreateIn{
 		UserName: "user2",
 		Password: "pass1",
 		Avatar:   "newAva",
@@ -266,8 +308,8 @@ func TestUserUpdateRepeatUsernameError(t *testing.T) {
 	}
 }
 func TestUserUpdateParamNotValidError(t *testing.T) {
-
-	userCreateUpdateIn := dto.UserCreateUpdateIn{
+	initCleanDatabase()
+	userCreateUpdateIn := dto.UserCreateIn{
 		UserName: "user1",
 		Password: "pass1",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
@@ -275,7 +317,7 @@ func TestUserUpdateParamNotValidError(t *testing.T) {
 
 	httpPostJson(t, r, "/api/v1/user", nil, userCreateUpdateIn)
 
-	userCreateUpdateIn = dto.UserCreateUpdateIn{
+	userCreateUpdateIn = dto.UserCreateIn{
 		UserName: "user2",
 		Password: "pass2",
 		Avatar:   "https://gw.alicdn.com/tps/TB1W_X6OXXXXXcZXVXXXXXXXXXX-400-400.png",
@@ -291,7 +333,7 @@ func TestUserUpdateParamNotValidError(t *testing.T) {
 	_, response := httpPostJson(t, r, "/api/v1/user/login", nil, userLoginDto)
 	authorization := "Bearer " + response["token"].(string)
 
-	userCreateUpdateIn = dto.UserCreateUpdateIn{
+	userCreateUpdateIn = dto.UserCreateIn{
 		UserName: "u",
 		Password: "pass1",
 		Avatar:   "newAva",
@@ -302,12 +344,13 @@ func TestUserUpdateParamNotValidError(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, code)
 	expectResponse := gin.H{
 		"code":    float64(serializer.StatusParamNotValid),
-		"message": "StatusParamNotValid",
+		"message": "username length should in [5,30]",
 	}
 	for k := range expectResponse {
 		assert.Equal(t, expectResponse[k], response[k])
 	}
 }
+
 func TestAdminUserRead(t *testing.T) {
 
 	filePath := util.FilePasswordAdmin
@@ -383,6 +426,7 @@ func TestAdminUserReadNoRoleError(t *testing.T) {
 		assert.Equal(t, expectResponse[k], response[k])
 	}
 }
+
 func httpRequest(t *testing.T, httpMethod string, router *gin.Engine, url string, headers map[string]string, body string) (responseCode int, responseText string) {
 	request, err := http.NewRequest(httpMethod, url, strings.NewReader(body))
 	assert.Nil(t, err)

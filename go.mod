@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.6.4
+	github.com/deckarep/golang-set v1.7.1
 	github.com/devfeel/mapper v0.7.4
 	github.com/gin-contrib/cors v1.3.0
 	github.com/gin-gonic/gin v1.6.3
