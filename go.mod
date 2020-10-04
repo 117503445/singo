@@ -1,6 +1,6 @@
 module singo
 
-go 1.12
+go 1.15
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.6.4
