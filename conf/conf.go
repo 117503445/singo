@@ -17,11 +17,16 @@ func Init() {
 	filepathBase := filepath.Dir(util.GetCurrentPath())
 	filePathEnv := filepath.Join(filepathBase, "config.yaml")
 
-	viper.SetConfigFile(filePathEnv) // 配置文件
+	viper.SetConfigFile(filePathEnv)
 
 	if err := viper.ReadInConfig(); err != nil {
-		_, _ = fmt.Fprintln(os.Stderr, "load config failed")
-		panic(err)
+		filePathEnv = filepath.Join(filepathBase, "data", "config.yaml")
+		viper.SetConfigFile(filePathEnv)
+
+		if err := viper.ReadInConfig(); err != nil {
+			_, _ = fmt.Fprintln(os.Stderr, "load config failed")
+			panic(err)
+		}
 	}
 
 	// 设置日志级别
